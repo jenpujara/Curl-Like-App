@@ -14,6 +14,19 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 
+/*
+ * http://www.java2s.com/Tutorials/Java/Socket/How_to_use_Java_Socket_class_to_create_a_HTTP_client.htm
+ * http://www.java2s.com/Tutorial/Java/0320__Network/SendingaPOSTRequestUsingaSocket.htm
+ * https://examples.javacodegeeks.com/core-java/net/socket/send-http-post-request-with-socket/
+ * https://www.dreamincode.net/forums/topic/189336-socket-post-request/
+ * https://www.geeksforgeeks.org/java-net-uri-class-java/
+ * https://www.geeksforgeeks.org/uri-getrawquery-method-in-java-with-examples/
+ * https://www.geeksforgeeks.org/uri-getrawpath-method-in-java-with-examples/
+ * https://www.geeksforgeeks.org/uri-getpath-method-in-java-with-examples/
+ * https://www.geeksforgeeks.org/uri-getrawuserinfo-method-in-java-with-examples/
+ * https://www.geeksforgeeks.org/uri-getauthority-method-in-java-with-examples/
+ * https://stackoverflow.com/questions/3487389/convert-string-to-uri
+ */
 public class httpcLibrary {
 
 	ArrayList<String> headerList = new ArrayList<>();
@@ -28,6 +41,7 @@ public class httpcLibrary {
 	String protocolName;
 	String query;
 	String urlPath;
+
 	String fileName;
 	String referenceName;
 	String newURL;
@@ -141,18 +155,12 @@ public class httpcLibrary {
 
 			}
 			if (getUrl() != null) {
-			//	System.out.println("-----> " + inLineData);
 				getUrlData();
 				if (!(readFileFlag && inLineDataFlag)) {
 					if (inputList.get(1).equals(POST)) {
 						postRequest();
 					} else if (inputList.get(1).equals(GET)) {
 						getRequest();
-						/*
-						 * if (!(readFileFlag || inLineDataFlag)) { this.getRequest(); } else {
-						 * System.out.
-						 * println("Invalid Command : In GET Request -f or -d are not allowed "); }
-						 */
 					} else {
 						System.out.println("No Post and Get Found in Input");
 					}
@@ -188,7 +196,7 @@ public class httpcLibrary {
 			protocolName = urL.getScheme();
 			setPortNumber(urL.getPort());
 			query = urL.getRawQuery();
-			urlPath = urL.getRawPath();
+			setUrlPath(urL.getRawPath());
 			if (getHostName() == null || getHostName().length() == 0) {
 				setHostName("");
 			}
@@ -202,8 +210,8 @@ public class httpcLibrary {
 			if (query == null || query.length() == 0) {
 				query = "";
 			}
-			if (query.length() > 0 || urlPath.length() > 0) {
-				urlPath = urlPath + "?" + query;
+			if (query.length() > 0 || getUrlPath().length() > 0) {
+				setUrlPath(getUrlPath() + "?" + query);
 			}
 			if (fileName == null || fileName.length() == 0) {
 				fileName = "";
@@ -243,7 +251,7 @@ public class httpcLibrary {
 		StringBuilder data = new StringBuilder();
 		PrintWriter writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
 		if (urlPath.length() != 0) {
-			writer.write(generateMethodURL("POST", urlPath, " HTTP/1.1\r\n"));
+			writer.write(generateMethodURL("POST", getUrlPath(), " HTTP/1.1\r\n"));
 			/// writer.write("POST " + urlPath + " HTTP/1.1\r\n");
 		} else {
 			writer.write(generateMethodURL("POST", "", " HTTP/1.1\r\n"));
@@ -267,9 +275,8 @@ public class httpcLibrary {
 				data.append(line);
 			}
 			reader.close();
-			//
 		}
-		writer.write("Content-Length:" + data.length() + "\r\n");
+		writer.write("Content-Length:" + data.toString().trim().length() + "\r\n");
 		writer.write("\r\n");
 		if (inLineData != null) {
 			inLineData = inLineData.replace("\'", "");
@@ -290,11 +297,11 @@ public class httpcLibrary {
 		if (!(readFileFlag || inLineDataFlag)) {
 			socket = new Socket(getHostName(), getPortNumber());
 			PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
-			if (urlPath.length() == 0) {
+			if (getUrlPath().length() == 0) {
 				// writer.println("GET / /1.1");
 				writer.println(generateMethodURL("GET", "", ""));
 			} else {
-				writer.println(generateMethodURL("GET", urlPath, ""));
+				writer.println(generateMethodURL("GET", getUrlPath(), ""));
 				// writer.println("GET " + urlPath + " HTTP/1.1");
 			}
 			writer.println("Host:" + getHostName());
@@ -320,33 +327,33 @@ public class httpcLibrary {
 
 		InputStream inputStream = socket.getInputStream();
 		BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-		String outputmsg;
+		String output;
 		boolean entryFlag = false;
 		boolean divideFlag = true;
 		StringBuilder receiveContent = new StringBuilder();
 		do {
-			outputmsg = reader.readLine();
-			if (outputmsg.isEmpty()) {
+			output = reader.readLine();
+			if (output.trim().isEmpty()) {
 				entryFlag = true;
 				if (entryFlag && divideFlag) {
 					divideFlag = false;
 					receiveContent.append("Content Separated");
 				}
 			}
-			receiveContent.append(outputmsg);
+			receiveContent.append(output);
 			receiveContent.append("Entry Separated");
-
-		} while ((outputmsg != null) && !(outputmsg.endsWith("}") || outputmsg.endsWith("</html>")
-				|| outputmsg.endsWith("/get") || outputmsg.endsWith("post")));
+		} while ((output.trim() != null) && !(output.endsWith("</html>") || output.endsWith("}")
+				|| output.endsWith("post") || output.endsWith("/get")));
 
 		reader.close();
 		String[] splitReceiveContent = receiveContent.toString().split("Content Separated");
 		String[] responseHeader = splitReceiveContent[0].split("Entry Separated");
 		String[] responseBody = splitReceiveContent[1].split("Entry Separated");
-		// System.out.println("Header " + splitReceiveContent[0]);
-		// System.out.println("Body " + splitReceiveContent[1]);
+		/*
+		 * System.out.println("Header " + splitReceiveContent[0]);
+		 * System.out.println("Body " + splitReceiveContent[1]);
+		 */
 		setStatusCode(Integer.parseInt(responseHeader[0].substring(9, 12)));
-		// System.out.println("Status Code" + getStatusCode());
 		for (int i = 0; i < responseHeader.length; i++) {
 			if (responseHeader[i].startsWith("Location:")) {
 				setNewURL(responseHeader[i].substring(10));
@@ -481,5 +488,13 @@ public class httpcLibrary {
 
 	public void setPortNumber(int portNumber) {
 		this.portNumber = portNumber;
+	}
+
+	public String getUrlPath() {
+		return urlPath;
+	}
+
+	public void setUrlPath(String urlPath) {
+		this.urlPath = urlPath;
 	}
 }
