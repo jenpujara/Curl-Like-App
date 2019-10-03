@@ -279,13 +279,13 @@ public class httpcLibrary {
 		writer.write("Content-Length:" + data.toString().trim().length() + "\r\n");
 		writer.write("\r\n");
 		if (inLineData != null) {
-			inLineData = inLineData.replace("\'", "");
-			writer.write(inLineData);
-			writer.write("\r\n");
+			//inLineData = inLineData.replace("\'", "");
+			writer.write(inLineData.replace("\'", "") + "\r\n");
+			//writer.write("\r\n");
 		}
 		if (data.toString().trim().length() >= 1) {
-			writer.write(data.toString());
-			writer.write("\r\n");
+			writer.write(data.toString() +"\r\n");
+			//writer.write("\r\n");
 		}
 		writer.flush();
 		displayOutput();
