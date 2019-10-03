@@ -15,11 +15,25 @@ import java.util.ArrayList;
 /* References
  * https://tools.ietf.org/html/rfc7231#section-7.1.2
  */
-public class httpcImpl {
+public class httpcClient {
 
 	
-	public httpcImpl(String input1) {
-		input = input1;
+	public static void main(String[] args) {
+		while (true) {
+			System.out.print(">> ");
+			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+			String input = "";
+			try {
+				input = br.readLine();
+				if (input.equalsIgnoreCase("exit")) {
+					break;
+				}
+				httpcLibrary library = new httpcLibrary(input);
+				library.parseInput();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	

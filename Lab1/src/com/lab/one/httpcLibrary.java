@@ -1,10 +1,13 @@
 package com.lab.one;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
@@ -13,7 +16,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 
-public class httpc {
+public class httpcLibrary {
 
 	ArrayList<String> headerList = new ArrayList<>();
 
@@ -54,28 +57,21 @@ public class httpc {
 	public static final String POST_REDIRECT = "postRedirect";
 	public static final String HTTP = "http";
 	public static final String HTTPS = "https";
+	public static final String GET = "get";
+	public static final String POST = "post";
+	public static final String VERBOSE_CODE = "-v";
+	public static final String HEADER_CODE = "-h";
+	public static final String INLINE_DATA_CODE1 = "--d";
+	public static final String INLINE_DATA_CODE2 = "-d";
+	public static final String READFILE_CODE = "-f";
+	public static final String CREATE_FILE_CODE = "-o";
+
 	public static final int HTTP_PORT = 80;
 	public static final int HTTPS_PORT = 443;
 
-	public static void main(String[] args) {
-		while (true) {
-			System.out.print(">> ");
-			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-			String input = "";
-			try {
-				input = br.readLine();
-				if (input.equalsIgnoreCase("exit")) {
-					break;
-				}
-				httpc httpcMain = new httpc(input);
-				httpcMain.parseInput();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
+	
 
-	public httpc(String input1) {
+	public httpcLibrary(String input1) {
 		input = input1;
 	}
 
@@ -88,27 +84,60 @@ public class httpc {
 				inputList.add(splitInput[i]);
 			}
 		}
-		if (inputList.get(0).equals("httpc") && (inputList.get(1).equals("get") || inputList.get(1).equals("post"))) {
+		if (inputList.get(0).equals("httpc") && (inputList.get(1).equals(GET) || inputList.get(1).equals(POST))) {
 			for (int i = 0; i < inputList.size(); i++) {
-				if (inputList.get(i).equals("-v")) {
-					verboseFlag = true;
+				switch (inputList.get(i)) {
+					case VERBOSE_CODE:
+						verboseFlag = true;
+						break;
+	
+					case HEADER_CODE:
+						headerFlag = true;
+						headerList.add(inputList.get(++i));
+						break;
+	
+					case INLINE_DATA_CODE1:
+						inLineDataFlag = true;
+						inLineData = inputList.get(++i);
+						break;
+						
+					case INLINE_DATA_CODE2:
+						inLineDataFlag = true;
+						inLineData = inputList.get(++i);
+						break;
+					
+					case READFILE_CODE:
+						readFileFlag = true;
+						readFile = inputList.get(++i);
+						break;
+					
+					case CREATE_FILE_CODE:
+						generateFileFlag = true;
+						generateFile = inputList.get(++i);
+						break;
+					
+					default:
+						break;
 				}
-				if (inputList.get(i).equals("-h")) {
-					headerFlag = true;
-					headerList.add(inputList.get(++i));
-				}
-				if (inputList.get(i).equals("--d") || inputList.get(i).equals("-d")) {
-					inLineDataFlag = true;
-					inLineData = inputList.get(++i);
-				}
-				if (inputList.get(i).equals("-f")) {
-					readFileFlag = true;
-					readFile = inputList.get(++i);
-				}
-				if (inputList.get(i).equals("-o")) {
-					generateFileFlag = true;
-					generateFile = inputList.get(++i);
-				}
+				// if (inputList.get(i).equals("-v")) {
+				// verboseFlag = true;
+				// }
+				// if (inputList.get(i).equals("-h")) {
+				// headerFlag = true;
+				// headerList.add(inputList.get(++i));
+				// }
+				// if (inputList.get(i).equals("--d") || inputList.get(i).equals("-d")) {
+				// inLineDataFlag = true;
+				// inLineData = inputList.get(++i);
+				// }
+				// if (inputList.get(i).equals("-f")) {
+				// readFileFlag = true;
+				// readFile = inputList.get(++i);
+				// }
+				// if (inputList.get(i).equals("-o")) {
+				// generateFileFlag = true;
+				// generateFile = inputList.get(++i);
+				// }
 				if (inputList.get(i).startsWith("http://") || inputList.get(i).startsWith("https://")) {
 					url = inputList.get(i);
 				}
@@ -116,9 +145,9 @@ public class httpc {
 			if (url != null) {
 				getUrlData();
 				if (!(readFileFlag && inLineDataFlag)) {
-					if (inputList.get(1).equals("post")) {
+					if (inputList.get(1).equals(POST)) {
 						this.postRequest();
-					} else if (inputList.get(1).equals("get")) {
+					} else if (inputList.get(1).equals(GET)) {
 						if (!(readFileFlag || inLineDataFlag)) {
 							this.getRequest();
 						} else {
@@ -176,11 +205,56 @@ public class httpc {
 		}
 	}
 
-	public void postRequest() {
+	public void postRequest() throws  IOException,UnknownHostException {
+		
+		socket = new Socket(hostName, portNumber);
+		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+		String data= "";
+		if (urlPath.length() != 0) {
+			bw.write("POST " + urlPath + " HTTP/1.1\r\n");
+		} else {			
+			bw.write("POST / HTTP/1.1\r\n");
+		}
+		bw.write("Host:" + hostName + "\r\n");
 
+		if(headerFlag && !headerList.isEmpty()) {
+				for (int i = 0; i < headerList.size(); i++) {
+					String[] headerKeyValue = headerList.get(i).split(":");
+					bw.write(headerKeyValue[0] + ":" + headerKeyValue[1]+"\r\n");
+				}
+		}
+		if(inLineDataFlag) {
+			//wr.write("Content-Type: application/json\r\n");
+			bw.write("Content-Length:" + inLineData.length() + "\r\n");
+		}
+		else if(readFileFlag) {
+			FileReader fr = new FileReader(readFile);
+			BufferedReader reader = new BufferedReader(fr);
+			String sCurrentLine;
+			while ((sCurrentLine = reader.readLine()) != null) {
+				data = data + sCurrentLine;
+			}
+			bw.write("Content-Length:" + data.length() + "\r\n");
+//			bw.write(data);
+		}
+
+		bw.write("\r\n");
+		if (inLineData != null) {
+			inLineData = inLineData.replace("\'", "");
+			bw.write(inLineData);
+			bw.write("\r\n");
+		}
+		if (data != null) {
+			bw.write(data);
+			bw.write("\r\n");
+		}
+		bw.flush();
+		this.printToConsole();
+		bw.close();
+		this.isRedirect("postRedirect");			
 	}
 
-	public void getRequest() throws UnknownHostException, IOException {
+	public void getRequest() throws  IOException {
 		socket = new Socket(hostName, portNumber);
 		PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
 		if (urlPath.length() == 0) {
