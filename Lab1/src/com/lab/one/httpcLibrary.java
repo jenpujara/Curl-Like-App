@@ -78,8 +78,8 @@ public class httpcLibrary {
 	 * 
 	 * @throws IOException
 	 */
+
 	public void parseInput() throws IOException {
-		System.out.println("Input Command : " + input);
 		String[] splitInput = input.trim().split(" ");
 		ArrayList<String> inputList = new ArrayList<>();
 		for (int i = 0; i < splitInput.length; i++) {
@@ -94,88 +94,82 @@ public class httpcLibrary {
 			for (int i = 0; i < inputList.size(); i++) {
 				switch (inputList.get(i)) {
 				case Constants.VERBOSE_CODE:
-					verboseFlag = true;
+					setVerboseFlag(true);
 					break;
 
 				case Constants.HEADER_CODE:
-					headerFlag = true;
+					setHeaderFlag(true);
 					headerList.add(inputList.get(++i));
 					break;
 
 				case Constants.INLINE_DATA_CODE1:
-					inLineDataFlag = true;
+					setInLineDataFlag(true);
 					inLineData = inputList.get(++i) + inputList.get(++i);
 					break;
 
 				case Constants.INLINE_DATA_CODE2:
-					inLineDataFlag = true;
+					setInLineDataFlag(true);
 					inLineData = inputList.get(++i) + inputList.get(++i);
 					break;
 
 				case Constants.READFILE_CODE:
-					readFileFlag = true;
+					setReadFileFlag(true);
 					readFile = inputList.get(++i);
 					break;
 
 				case Constants.CREATE_FILE_CODE:
-					generateFileFlag = true;
+					setGenerateFileFlag(true);
 					generateFile = inputList.get(++i);
 					break;
 
 				default:
 					break;
 				}
-				// if (inputList.get(i).equals("-v")) {
-				// verboseFlag = true;
-				// }
-				// if (inputList.get(i).equals("-h")) {
-				// headerFlag = true;
-				// headerList.add(inputList.get(++i));
-				// }
-				// if (inputList.get(i).equals("--d") || inputList.get(i).equals("-d")) {
-				// inLineDataFlag = true;
-				// inLineData = inputList.get(++i);
-				// }
-				// if (inputList.get(i).equals("-f")) {
-				// readFileFlag = true;
-				// readFile = inputList.get(++i);
-				// }
-				// if (inputList.get(i).equals("-o")) {
-				// generateFileFlag = true;
-				// generateFile = inputList.get(++i);
-				// }
 				if (inputList.get(i).startsWith("http://") || inputList.get(i).startsWith("https://")) {
 					setUrl(inputList.get(i));
 				}
 
 			}
-			if (getUrl() != null) {
-				getUrlData();
-				if (!(readFileFlag && inLineDataFlag)) {
-					if (inputList.get(1).equals(Constants.POST)) {
-						postRequest();
-					} else if (inputList.get(1).equals(Constants.GET)) {
-						getRequest();
-					} else {
-						System.out.println("No Post and Get Found in Input");
-					}
-				} else {
-					System.out.println("Invalid Command: -f and -d both are not allowed.");
-				}
-			} else {
-				System.out.println("Invalid URL");
-			}
+			// inputList.get(1).trim() this will give whether request is GET or POST
+			processRequest(inputList.get(1).trim());
 		} else {
 			System.out.println("Invalid Command");
 		}
 
 	}
 
+	public void processRequest(String requestType) {
+		if (getUrl() != null) {
+			getUrlData();
+			if (!(isReadFileFlag() && isInLineDataFlag())) {
+				if (requestType.equals(Constants.POST)) {
+					try {
+						postRequest();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				} else if (requestType.equals(Constants.GET)) {
+					try {
+						getRequest();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				} else {
+					System.out.println("No Post and Get Found in Input");
+				}
+			} else {
+				System.out.println("Invalid Command: -f and -d both are not allowed.");
+			}
+		} else {
+			System.out.println("Invalid URL");
+		}
+	}
 	/**
 	 * printHelp method prints the details for GET and POST when help option is
 	 * typed in.
 	 * 
-	 * @param option represents either GET or POST method.
+	 * @param option
+	 *            represents either GET or POST method.
 	 */
 	public static void printHelp(String option) {
 		if (option.equals(Constants.POST)) {
@@ -224,37 +218,8 @@ public class httpcLibrary {
 				referenceName = "";
 			}
 		} catch (URISyntaxException e) {
-			e.printStackTrace();
+			System.out.println(e.getMessage());
 		}
-	}
-
-	/**
-	 * This method forms the format for the based on the method type.
-	 * 
-	 * @param method  can be either GET or POST.
-	 * @param tempURL determines the entire URLpath
-	 * @param type    describes the type of version for HTTP Protocol
-	 * @return String
-	 */
-	public static String generateMethodURL(String method, String tempURL, String type) {
-		if (method.equals("POST")) {
-			if (tempURL.length() != 0) {
-				return "POST " + tempURL + " HTTP/1.1\r\n";
-				// writer.write("POST " + urlPath + " HTTP/1.1\r\n");
-			} else {
-				return "POST / HTTP/1.1\r\n";
-				// writer.write("POST / HTTP/1.1\r\n");
-			}
-		} else if (method.equals("GET")) {
-			if (tempURL.length() == 0) {
-				// writer.println("GET / /1.1");
-				return "GET / /1.1";
-			} else {
-				return "GET " + tempURL + " HTTP/1.1";
-				// writer.println("GET " + urlPath + " HTTP/1.1");
-			}
-		}
-		return "";
 	}
 
 	/**
@@ -269,23 +234,19 @@ public class httpcLibrary {
 		PrintWriter writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
 		if (urlPath.length() != 0) {
 			writer.write(generateMethodURL("POST", getUrlPath(), " HTTP/1.1\r\n"));
-			/// writer.write("POST " + urlPath + " HTTP/1.1\r\n");
 		} else {
 			writer.write(generateMethodURL("POST", "", " HTTP/1.1\r\n"));
-			// writer.write("POST / HTTP/1.1\r\n");
 		}
 		writer.write("Host:" + getHostName() + "\r\n");
-
-		if (headerFlag && !headerList.isEmpty()) {
+		if (isHeaderFlag() && !headerList.isEmpty()) {
 			for (int i = 0; i < headerList.size(); i++) {
 				String[] headerKeyValue = headerList.get(i).split(":");
 				writer.write(headerKeyValue[0] + ":" + headerKeyValue[1] + "\r\n");
 			}
 		}
-		if (inLineDataFlag) {
+		if (isInLineDataFlag()) {
 			data.append(inLineData);
-			// writer.write("Content-Length:" + inLineData.length() + "\r\n");
-		} else if (readFileFlag) {
+		} else if (isReadFileFlag()) {
 			BufferedReader reader = new BufferedReader(new FileReader(readFile));
 			String line;
 			while ((line = reader.readLine()) != null) {
@@ -296,13 +257,10 @@ public class httpcLibrary {
 		writer.write("Content-Length:" + data.toString().trim().length() + "\r\n");
 		writer.write("\r\n");
 		if (inLineData != null) {
-			// inLineData = inLineData.replace("\'", "");
 			writer.write(inLineData.replace("\'", "") + "\r\n");
-			// writer.write("\r\n");
 		}
 		if (data.toString().trim().length() >= 1) {
 			writer.write(data.toString() + "\r\n");
-			// writer.write("\r\n");
 		}
 		writer.flush();
 		displayOutput();
@@ -316,20 +274,18 @@ public class httpcLibrary {
 	 * @throws IOException
 	 */
 	public void getRequest() throws IOException {
-		if (!(readFileFlag || inLineDataFlag)) {
+		if (!(isReadFileFlag() || isInLineDataFlag())) {
 			socket = new Socket(getHostName(), getPortNumber());
 			PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
 			if (getUrlPath().length() == 0) {
-				// writer.println("GET / /1.1");
 				writer.println(generateMethodURL("GET", "", ""));
 			} else {
 				writer.println(generateMethodURL("GET", getUrlPath(), ""));
-				// writer.println("GET " + urlPath + " HTTP/1.1");
 			}
 			writer.println("Host:" + getHostName());
 			if (!headerList.isEmpty()) {
 				for (int i = 0; i < headerList.size(); i++) {
-					if (headerFlag) {
+					if (isHeaderFlag()) {
 						String[] headerKeyValue = headerList.get(i).split(":");
 						writer.println(headerKeyValue[0] + ":" + headerKeyValue[1]);
 					}
@@ -377,20 +333,15 @@ public class httpcLibrary {
 		String[] splitReceiveContent = receiveContent.toString().split("Content Separated");
 		String[] responseHeader = splitReceiveContent[0].split("Entry Separated");
 		String[] responseBody = splitReceiveContent[1].split("Entry Separated");
-		/*
-		 * System.out.println("Header " + splitReceiveContent[0]);
-		 * System.out.println("Body " + splitReceiveContent[1]);
-		 */
 		setStatusCode(Integer.parseInt(responseHeader[0].substring(9, 12)));
 		for (int i = 0; i < responseHeader.length; i++) {
 			if (responseHeader[i].startsWith("Location:")) {
 				setNewURL(responseHeader[i].substring(10));
 			}
 		}
-		// For Verbose
-		isVerbose(verboseFlag, responseHeader);
+		isVerbose(isVerboseFlag(), responseHeader);
 		printOutput(responseBody);
-		isGenerateFile(generateFileFlag, responseHeader, responseBody);
+		isGenerateFile(isGenerateFileFlag(), responseHeader, responseBody);
 
 	}
 
@@ -403,43 +354,74 @@ public class httpcLibrary {
 	public void isRedirect(String requestRedirect) {
 		if (getStatusCode() != Constants.HTTP_OK && (getStatusCode() == Constants.HTTP_MOVED_TEMP
 				|| getStatusCode() == Constants.HTTP_MOVED_PERM || getStatusCode() == Constants.HTTP_SEE_OTHER)) {
-			isRedirect = true;
+			setReadFileFlag(true);
 			try {
-				isRedirect = false;
-				System.out.println("");
-				Thread.sleep(1000);
-				System.out.println("Status Code :" + getStatusCode());
-				Thread.sleep(1000);
-				System.out.print("Connecting to:" + getNewURL());
-				Thread.sleep(2000);
-				System.out.println("Please Wait.......");
-				/*
-				 * for (int k = 0; k < 4; k++) { Thread.sleep(500); System.out.print("."); }
-				 */
+				setRedirect(false);
+				sleepThread(1000);
+				System.out.println("\nStatus Code :" + getStatusCode());
+				sleepThread(1000);
+				System.out.print("Redirecting to:" + getNewURL() + "\n Please Wait............");
+				sleepThread(2000);
 				setUrl(newURL);
 				getUrlData();
 				if (requestRedirect.equals(Constants.GET_REDIRECT))
 					getRequest();
 				else if (requestRedirect.equals(Constants.POST_REDIRECT))
 					postRequest();
-
 				System.out.println("Validated : Redirection");
 			} catch (IOException e) {
-				e.printStackTrace();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+				System.out.println(e.getMessage());
 			}
 		}
 
+	}
+
+	public static void sleepThread(int seconds) {
+		try {
+			Thread.sleep(seconds);
+		} catch (InterruptedException e) {
+			System.out.println(e.getMessage());
+		}
+	}
+
+	/**
+	 * This method forms the format for the based on the method type.
+	 * 
+	 * @param method
+	 *            can be either GET or POST.
+	 * @param tempURL
+	 *            determines the entire URLpath
+	 * @param type
+	 *            describes the type of version for HTTP Protocol
+	 * @return String
+	 */
+	public static String generateMethodURL(String method, String tempURL, String type) {
+		if (method.equals("POST")) {
+			if (tempURL.length() != 0) {
+				return "POST " + tempURL + " HTTP/1.1\r\n";
+			} else {
+				return "POST / HTTP/1.1\r\n";
+			}
+		} else if (method.equals("GET")) {
+			if (tempURL.length() == 0) {
+				return "GET / /1.1";
+			} else {
+				return "GET " + tempURL + " HTTP/1.1";
+			}
+		}
+		return "";
 	}
 
 	/**
 	 * isGenerateFile method creates a file with the header and body passed in the
 	 * parameters if CREATE_FILE_CODE is present in the Url.
 	 * 
-	 * @param flag        checks if generateFileFlag is true or false.
-	 * @param headers     provides the header values to be used for file.
-	 * @param messagebody provides the main content for the file.
+	 * @param flag
+	 *            checks if generateFileFlag is true or false.
+	 * @param headers
+	 *            provides the header values to be used for file.
+	 * @param messagebody
+	 *            provides the main content for the file.
 	 */
 	public void isGenerateFile(boolean flag, String[] headers, String[] messagebody) {
 		if (flag) {
@@ -448,21 +430,14 @@ public class httpcLibrary {
 				try {
 					writer = new PrintWriter(generateFile, "UTF-8");
 					writer.println("Command: " + input + "\r\n");
-					if (verboseFlag) {
+					if (isVerboseFlag())
 						printOutputInFile(writer, headers);
-						/*
-						 * for (int i = 0; i < headers.length; i++) { writer.println(headers[i]); }
-						 */
-					}
+
 					writer.println("");
 					printOutputInFile(writer, messagebody);
-					/*
-					 * for (int i = 0; i < messagebody.length; i++) {
-					 * writer.println(messagebody[i]); }
-					 */
 					writer.close();
 				} catch (FileNotFoundException | UnsupportedEncodingException e) {
-					e.printStackTrace();
+					System.out.println(e.getMessage());
 				}
 			}
 		}
@@ -482,7 +457,8 @@ public class httpcLibrary {
 	/**
 	 * This method prints the message passed as a parameter
 	 * 
-	 * @param message to be printed
+	 * @param message
+	 *            to be printed
 	 */
 	public static void printOutput(String[] message) {
 		for (int i = 0; i < message.length; i++) {
@@ -610,4 +586,53 @@ public class httpcLibrary {
 	public void setUrlPath(String urlPath) {
 		this.urlPath = urlPath;
 	}
+
+	public boolean isVerboseFlag() {
+		return verboseFlag;
+	}
+
+	public void setVerboseFlag(boolean verboseFlag) {
+		this.verboseFlag = verboseFlag;
+	}
+
+	public boolean isHeaderFlag() {
+		return headerFlag;
+	}
+
+	public void setHeaderFlag(boolean headerFlag) {
+		this.headerFlag = headerFlag;
+	}
+
+	public boolean isInLineDataFlag() {
+		return inLineDataFlag;
+	}
+
+	public void setInLineDataFlag(boolean inLineDataFlag) {
+		this.inLineDataFlag = inLineDataFlag;
+	}
+
+	public boolean isReadFileFlag() {
+		return readFileFlag;
+	}
+
+	public void setReadFileFlag(boolean readFileFlag) {
+		this.readFileFlag = readFileFlag;
+	}
+
+	public boolean isGenerateFileFlag() {
+		return generateFileFlag;
+	}
+
+	public void setGenerateFileFlag(boolean generateFileFlag) {
+		this.generateFileFlag = generateFileFlag;
+	}
+
+	public boolean isRedirect() {
+		return isRedirect;
+	}
+
+	public void setRedirect(boolean isRedirect) {
+		this.isRedirect = isRedirect;
+	}
+
 }
