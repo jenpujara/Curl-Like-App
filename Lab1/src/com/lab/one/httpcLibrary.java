@@ -14,7 +14,15 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 
-/*
+/**
+ * httpcLibrary class contains various methods to develop a library for cURL commands.
+ *
+ * @author Himen Sidhpura
+ * @author Jenny Mistry 
+ * @version 1.0.0
+ */
+
+/**
  * http://www.java2s.com/Tutorials/Java/Socket/How_to_use_Java_Socket_class_to_create_a_HTTP_client.htm
  * http://www.java2s.com/Tutorial/Java/0320__Network/SendingaPOSTRequestUsingaSocket.htm
  * https://examples.javacodegeeks.com/core-java/net/socket/send-http-post-request-with-socket/
@@ -56,34 +64,20 @@ public class httpcLibrary {
 	boolean generateFileFlag = false;
 	boolean isRedirect = false;
 
-	public static final int HTTP_OK = 200;
-	public static final int HTTP_MULT_CHOICE = 300;
-	public static final int HTTP_MOVED_PERM = 301;
-	public static final int HTTP_MOVED_TEMP = 302;
-	public static final int HTTP_SEE_OTHER = 303;
-	public static final int HTTP_NOT_MODIFIED = 304;
-	public static final int HTTP_USE_PROXY = 305;
-	public static final String HTTPC = "httpc";
-	public static final String GET_REDIRECT = "getRedirect";
-	public static final String POST_REDIRECT = "postRedirect";
-	public static final String HTTP = "http";
-	public static final String HTTPS = "https";
-	public static final String GET = "get";
-	public static final String POST = "post";
-	public static final String VERBOSE_CODE = "-v";
-	public static final String HEADER_CODE = "-h";
-	public static final String INLINE_DATA_CODE1 = "--d";
-	public static final String INLINE_DATA_CODE2 = "-d";
-	public static final String READFILE_CODE = "-f";
-	public static final String CREATE_FILE_CODE = "-o";
-	public static final String HELP = "help";
-	public static final int HTTP_PORT = 80;
-	public static final int HTTPS_PORT = 443;
-
+	/**
+	 * Getter for httpcLibrary
+	 * 
+	 * @param input1
+	 */
 	public httpcLibrary(String input1) {
 		input = input1;
 	}
 
+	/**
+	 * This method is used to parse the provided input.
+	 * 
+	 * @throws IOException
+	 */
 	public void parseInput() throws IOException {
 		System.out.println("Input Command : " + input);
 		String[] splitInput = input.trim().split(" ");
@@ -93,36 +87,37 @@ public class httpcLibrary {
 				inputList.add(splitInput[i]);
 			}
 		}
-		if (inputList.get(0).equals(HTTPC) && (inputList.get(1).equals(HELP))) {
+		if (inputList.get(0).equals(Constants.HTTPC) && (inputList.get(1).equals(Constants.HELP))) {
 			printHelp(inputList.get(2));
-		} else if (inputList.get(0).equals(HTTPC) && (inputList.get(1).equals(GET) || inputList.get(1).equals(POST))) {
+		} else if (inputList.get(0).equals(Constants.HTTPC)
+				&& (inputList.get(1).equals(Constants.GET) || inputList.get(1).equals(Constants.POST))) {
 			for (int i = 0; i < inputList.size(); i++) {
 				switch (inputList.get(i)) {
-				case VERBOSE_CODE:
+				case Constants.VERBOSE_CODE:
 					verboseFlag = true;
 					break;
 
-				case HEADER_CODE:
+				case Constants.HEADER_CODE:
 					headerFlag = true;
 					headerList.add(inputList.get(++i));
 					break;
 
-				case INLINE_DATA_CODE1:
+				case Constants.INLINE_DATA_CODE1:
 					inLineDataFlag = true;
 					inLineData = inputList.get(++i) + inputList.get(++i);
 					break;
 
-				case INLINE_DATA_CODE2:
+				case Constants.INLINE_DATA_CODE2:
 					inLineDataFlag = true;
 					inLineData = inputList.get(++i) + inputList.get(++i);
 					break;
 
-				case READFILE_CODE:
+				case Constants.READFILE_CODE:
 					readFileFlag = true;
 					readFile = inputList.get(++i);
 					break;
 
-				case CREATE_FILE_CODE:
+				case Constants.CREATE_FILE_CODE:
 					generateFileFlag = true;
 					generateFile = inputList.get(++i);
 					break;
@@ -157,9 +152,9 @@ public class httpcLibrary {
 			if (getUrl() != null) {
 				getUrlData();
 				if (!(readFileFlag && inLineDataFlag)) {
-					if (inputList.get(1).equals(POST)) {
+					if (inputList.get(1).equals(Constants.POST)) {
 						postRequest();
-					} else if (inputList.get(1).equals(GET)) {
+					} else if (inputList.get(1).equals(Constants.GET)) {
 						getRequest();
 					} else {
 						System.out.println("No Post and Get Found in Input");
@@ -176,12 +171,18 @@ public class httpcLibrary {
 
 	}
 
+	/**
+	 * printHelp method prints the details for GET and POST when help option is
+	 * typed in.
+	 * 
+	 * @param option represents either GET or POST method.
+	 */
 	public static void printHelp(String option) {
-		if (option.equals(POST)) {
+		if (option.equals(Constants.POST)) {
 			System.out.println(
 					"usage: httpc post [-v] [-h key:value] [-d inline-data] [-f file] URL\nPost executes a HTTP POST request for a given URL with inline data or from file.\n -v Prints the detail of the response such as protocol, status, and headers.\n -h key:value Associates headers to HTTP Request with the format 'key:value'.\n -d string Associates an inline data to the body HTTP POST request. \n -f file Associates the content of a file to the body HTTP POST request.\nEither [-d] or [-f] can be used but not both.");
 
-		} else if (option.equals(GET)) {
+		} else if (option.equals(Constants.GET)) {
 			System.out.println("usage: httpc get [-v] [-h key:value] URL\r\n"
 					+ "Get executes a HTTP GET request for a given URL.\r\n"
 					+ " -v Prints the detail of the response such as protocol, status,\r\n" + "and headers.\r\n"
@@ -189,6 +190,9 @@ public class httpcLibrary {
 		}
 	}
 
+	/**
+	 * getUrlData fetches the information required for the Url.
+	 */
 	private void getUrlData() {
 		try {
 			URI urL = new URI(getUrl());
@@ -201,10 +205,10 @@ public class httpcLibrary {
 				setHostName("");
 			}
 			if (getPortNumber() == -1) {
-				if (protocolName.equals(HTTP)) {
-					setPortNumber(HTTP_PORT);
-				} else if (protocolName.equals(HTTPS)) {
-					setPortNumber(HTTPS_PORT);
+				if (protocolName.equals(Constants.HTTP)) {
+					setPortNumber(Constants.HTTP_PORT);
+				} else if (protocolName.equals(Constants.HTTPS)) {
+					setPortNumber(Constants.HTTPS_PORT);
 				}
 			}
 			if (query == null || query.length() == 0) {
@@ -224,6 +228,14 @@ public class httpcLibrary {
 		}
 	}
 
+	/**
+	 * This method forms the format for the based on the method type.
+	 * 
+	 * @param method  can be either GET or POST.
+	 * @param tempURL determines the entire URLpath
+	 * @param type    describes the type of version for HTTP Protocol
+	 * @return String
+	 */
 	public static String generateMethodURL(String method, String tempURL, String type) {
 		if (method.equals("POST")) {
 			if (tempURL.length() != 0) {
@@ -245,6 +257,11 @@ public class httpcLibrary {
 		return "";
 	}
 
+	/**
+	 * postRequest provides the implementation of HTTP POST method.
+	 * 
+	 * @throws IOException
+	 */
 	public void postRequest() throws IOException {
 
 		socket = new Socket(getHostName(), getPortNumber());
@@ -279,20 +296,25 @@ public class httpcLibrary {
 		writer.write("Content-Length:" + data.toString().trim().length() + "\r\n");
 		writer.write("\r\n");
 		if (inLineData != null) {
-			//inLineData = inLineData.replace("\'", "");
+			// inLineData = inLineData.replace("\'", "");
 			writer.write(inLineData.replace("\'", "") + "\r\n");
-			//writer.write("\r\n");
+			// writer.write("\r\n");
 		}
 		if (data.toString().trim().length() >= 1) {
-			writer.write(data.toString() +"\r\n");
-			//writer.write("\r\n");
+			writer.write(data.toString() + "\r\n");
+			// writer.write("\r\n");
 		}
 		writer.flush();
 		displayOutput();
 		writer.close();
-		isRedirect(POST_REDIRECT);
+		isRedirect(Constants.POST_REDIRECT);
 	}
 
+	/**
+	 * getRequest provides the implementation of HTTP GET method.
+	 * 
+	 * @throws IOException
+	 */
 	public void getRequest() throws IOException {
 		if (!(readFileFlag || inLineDataFlag)) {
 			socket = new Socket(getHostName(), getPortNumber());
@@ -317,12 +339,18 @@ public class httpcLibrary {
 			writer.flush();
 			displayOutput();
 			writer.close();
-			isRedirect(GET_REDIRECT);
+			isRedirect(Constants.GET_REDIRECT);
 		} else {
 			System.out.println("Invalid Command : In GET Request -f or -d are not allowed ");
 		}
 	}
 
+	/**
+	 * This method uses Sockets to take the input and writes the result on the
+	 * console.
+	 * 
+	 * @throws IOException
+	 */
 	public void displayOutput() throws IOException {
 
 		InputStream inputStream = socket.getInputStream();
@@ -366,9 +394,15 @@ public class httpcLibrary {
 
 	}
 
+	/**
+	 * isRedirect method checks the status code in the url and based on code,
+	 * redirects to the corresponding page
+	 * 
+	 * @param requestRedirect
+	 */
 	public void isRedirect(String requestRedirect) {
-		if (getStatusCode() != HTTP_OK && (getStatusCode() == HTTP_MOVED_TEMP || getStatusCode() == HTTP_MOVED_PERM
-				|| getStatusCode() == HTTP_SEE_OTHER)) {
+		if (getStatusCode() != Constants.HTTP_OK && (getStatusCode() == Constants.HTTP_MOVED_TEMP
+				|| getStatusCode() == Constants.HTTP_MOVED_PERM || getStatusCode() == Constants.HTTP_SEE_OTHER)) {
 			isRedirect = true;
 			try {
 				isRedirect = false;
@@ -384,11 +418,11 @@ public class httpcLibrary {
 				 */
 				setUrl(newURL);
 				getUrlData();
-				if (requestRedirect.equals(GET_REDIRECT)) {
+				if (requestRedirect.equals(Constants.GET_REDIRECT))
 					getRequest();
-				} else if (requestRedirect.equals(POST_REDIRECT)) {
+				else if (requestRedirect.equals(Constants.POST_REDIRECT))
 					postRequest();
-				}
+
 				System.out.println("Validated : Redirection");
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -399,6 +433,14 @@ public class httpcLibrary {
 
 	}
 
+	/**
+	 * isGenerateFile method creates a file with the header and body passed in the
+	 * parameters if CREATE_FILE_CODE is present in the Url.
+	 * 
+	 * @param flag        checks if generateFileFlag is true or false.
+	 * @param headers     provides the header values to be used for file.
+	 * @param messagebody provides the main content for the file.
+	 */
 	public void isGenerateFile(boolean flag, String[] headers, String[] messagebody) {
 		if (flag) {
 			PrintWriter writer;
@@ -426,7 +468,7 @@ public class httpcLibrary {
 		}
 	}
 
-	/*
+	/**
 	 * This Function is used to check whether verbose is used in input command or
 	 * Not. If verbose used, Prints the detail of the response such as protocol,
 	 * status, and headers.
@@ -437,6 +479,11 @@ public class httpcLibrary {
 		}
 	}
 
+	/**
+	 * This method prints the message passed as a parameter
+	 * 
+	 * @param message to be printed
+	 */
 	public static void printOutput(String[] message) {
 		for (int i = 0; i < message.length; i++) {
 			System.out.println(message[i]);
@@ -444,56 +491,122 @@ public class httpcLibrary {
 		System.out.println("");
 	}
 
+	/**
+	 * This method is used to print the data in file for CREATE_FILE_CODE option.
+	 * 
+	 * @param writer
+	 * @param message
+	 */
 	public static void printOutputInFile(PrintWriter writer, String[] message) {
 		for (int i = 0; i < message.length; i++) {
 			writer.println(message[i]);
 		}
 	}
 
+	/**
+	 * Getter for fetching url.
+	 * 
+	 * @return url
+	 */
 	public String getUrl() {
 		return url;
 	}
 
+	/**
+	 * Setter for setting the url.
+	 * 
+	 * @param url
+	 */
 	public void setUrl(String url) {
 		this.url = url;
 	}
 
+	/**
+	 * Getter for fetching the new url.
+	 * 
+	 * @return newURL
+	 */
 	public String getNewURL() {
 		return newURL;
 	}
 
+	/**
+	 * Setter for setting the new url.
+	 * 
+	 * @param newURL
+	 */
 	public void setNewURL(String newURL) {
 		this.newURL = newURL;
 	}
 
+	/**
+	 * Getter for fetching the status code.
+	 * 
+	 * @return statusCode
+	 */
 	public int getStatusCode() {
 		return statusCode;
 	}
 
+	/**
+	 * Setter for setting the status code.
+	 * 
+	 * @param statusCode
+	 */
 	public void setStatusCode(int statusCode) {
 		this.statusCode = statusCode;
 	}
 
+	/**
+	 * Getter for fetching the host name of the url.
+	 * 
+	 * @return hostName
+	 */
 	public String getHostName() {
 		return hostName;
 	}
 
+	/**
+	 * Setter for setting the host name of the url.
+	 * 
+	 * @param hostName
+	 */
 	public void setHostName(String hostName) {
 		this.hostName = hostName;
 	}
 
+	/**
+	 * Getter for fetching the port number of the url.
+	 * 
+	 * @return portNumber
+	 */
 	public int getPortNumber() {
 		return portNumber;
 	}
 
+	/**
+	 * Setter for setting the port number of the url.
+	 * 
+	 * @param portNumber
+	 */
 	public void setPortNumber(int portNumber) {
 		this.portNumber = portNumber;
 	}
 
+	/**
+	 * Getter for fetching the path of the url.
+	 * 
+	 * @return urlPath
+	 */
 	public String getUrlPath() {
 		return urlPath;
 	}
 
+	/**
+	 * Setter for setting the path of the url.
+	 * 
+	 * @param urlPath
+	 */
 	public void setUrlPath(String urlPath) {
 		this.urlPath = urlPath;
 	}
