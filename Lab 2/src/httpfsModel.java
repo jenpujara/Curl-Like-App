@@ -3,7 +3,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
-public class httpFileModel {	
+public class httpfsModel {	
 	//int count = 0;
 	boolean dispositionInlineFlag = false;
 	boolean dispositionAttachmentFlag = false;
@@ -18,7 +18,7 @@ public class httpFileModel {
 //	String space = " ";
 	ArrayList<String> fileServerHeader;
 	
-	public httpFileModel(){
+	public httpfsModel(){
 		fileServerHeader = new ArrayList<>();
 		headerMap = new HashMap<>();
 		paramMap = new HashMap<>();
@@ -97,17 +97,14 @@ public class httpFileModel {
 	}
 	
 	public String getConnectionState() {
-		String state="";
-		if(statusCode.equals(Constants.STATUS_CODE_1)) 
-			state = "OK";
-		else if(statusCode.equals(Constants.STATUS_CODE_2))
-			state = "Bad Request";
-		else if(statusCode.equals(Constants.STATUS_CODE_3))
-			state = "Not Found";
+		if(statusCode.equals(Constants.HTTP_200)) 
+			return  "OK";
+		else if(statusCode.equals(Constants.HTTP_400))
+			return  "Bad Request";
+		else if(statusCode.equals(Constants.HTTP_404))
+			return  "Not Found";
 		else 
-			state = "ERROR HTTP";
-		
-		return state;
+			return  "ERROR HTTP";
 	}
 	
 	public void setParams(String key, String value) {
