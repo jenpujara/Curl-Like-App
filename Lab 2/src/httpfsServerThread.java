@@ -10,6 +10,23 @@ import java.net.Socket;
 public class httpfsServerThread implements Runnable {
 
 	boolean contentTypeFlag = false;
+
+	public boolean isContentTypeFlag() {
+		return contentTypeFlag;
+	}
+
+	public void setContentTypeFlag(boolean contentTypeFlag) {
+		this.contentTypeFlag = contentTypeFlag;
+	}
+
+	public boolean isDispositionFlag() {
+		return dispositionFlag;
+	}
+
+	public void setDispositionFlag(boolean dispositionFlag) {
+		this.dispositionFlag = dispositionFlag;
+	}
+
 	boolean dispositionFlag = false;
 	// boolean serverActiveFlag = true;
 	// static boolean portFlag = false;
@@ -40,14 +57,17 @@ public class httpfsServerThread implements Runnable {
 	httpfsModel model;
 	int clientInstance;
 
-	public httpfsServerThread(Socket serverClient, String pathDirectory, int counter) {
+	public httpfsServerThread(Socket serverClient, String pathDirectory1, int counter) {
 		this.socket = serverClient;
 		setClientInstance(counter);
-		setPathDirectory(this.pathDirectory);
+		setPathDirectory(pathDirectory1);
+		System.out.println("PAth in Constructor " + getPathDirectory());
+
 	}
 
 	public void run() {
 		try {
+			System.out.println("PAth in rum " + getPathDirectory());
 			model = new httpfsModel();
 			BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			// output stream
@@ -65,14 +85,17 @@ public class httpfsServerThread implements Runnable {
 				}
 				if (isHttpfsFlag()) {
 					model.addhttpfsHeaders(inputRequest);
-					if (inputRequest.startsWith(Constants.CONTENT_TYPE))
-						contentTypeFlag = true;
-					if (inputRequest.startsWith(Constants.CONTENT_DISPOSITION)) {
-						dispositionFlag = true;
-					}
-					if (inputRequest.startsWith(Constants.INLINE_DATA_CODE2)) {
-						setBody(inputRequest.substring(2));
-					}
+					contentTypeFlag = inputRequest.startsWith(Constants.CONTENT_TYPE) ? true : contentTypeFlag;
+					dispositionFlag = inputRequest.startsWith(Constants.CONTENT_DISPOSITION) ? true : dispositionFlag;
+					body = inputRequest.startsWith(Constants.INLINE_DATA_CODE2) ? inputRequest.substring(2) : body;
+					/*
+					 * if (inputRequest.startsWith(Constants.CONTENT_TYPE)) contentTypeFlag = true;
+					 * if (inputRequest.startsWith(Constants.CONTENT_DISPOSITION)) { dispositionFlag
+					 * = true; }
+					 * 
+					 * if (inputRequest.startsWith(Constants.INLINE_DATA_CODE2)) {
+					 * setBody(inputRequest.substring(2)); }
+					 */
 				}
 				if (isHttpfsFlag() && inputRequest.isEmpty()) {
 					break;
@@ -80,9 +103,11 @@ public class httpfsServerThread implements Runnable {
 
 				if (isHttpcFlag()) {
 					System.out.println(inputRequest);
-					if (inputRequest.matches("(.*):(.*)") && cntFlag == 0) {
-						String[] splitInput = inputRequest.split(":");
-						model.addFileHeaders(splitInput[0].trim(), splitInput[1].trim());
+					if (inputRequest.matches("(.*):(.*)")) {
+						if (cntFlag == 0) {
+							String[] splitInput = inputRequest.split(":");
+							model.addFileHeaders(splitInput[0].trim(), splitInput[1].trim());
+						}
 					}
 
 					if (cntFlag == 1) {
@@ -131,42 +156,42 @@ public class httpfsServerThread implements Runnable {
 	public synchronized void curlRequest() {
 		setCurlRequest(getCurlRequest().replace("GET /", "").replace("POST /", "").replace("HTTP/1.1", ""));
 		model.setStatusCode(Constants.HTTP_200);
-		model.setUri("http://localhost:" + getPort() + "/" + getCurlRequest());
+		model.setUri("http://127.0.0.1:" + getPort() + "/" + getCurlRequest());
 		writer.println(model.getHeaderPart());
 		checkCurlOption();
 	}
 
 	private void checkCurlOption() {
 		if (getCurlRequest().startsWith("get?")) {
-			System.out.println("curl GET Request...");
+			System.out.println("CURL : Request Type GET");
 			// args
 			setCurlRequest(getCurlRequest().replace("get?", ""));
 			if (getCurlRequest().matches("(.*)&(.*)")) {
 				String[] temp = getCurlRequest().split("&");
 				for (int i = 0; i < temp.length; i++) {
-					String[] args = temp[i].split("=");
-					model.setParams(args[0], args[1]);
+					String[] args = temp[i].split("="); // need to change
+					model.setParams(args[0], args[1]); // need to change
 				}
 			} else {
-				String[] args = getCurlRequest().split("=");
-				model.setParams(args[0], args[1]);
+				String[] args = getCurlRequest().split("="); // need to change
+				model.setParams(args[0], args[1]);// need to change
 			}
 			System.out.println(model.getGETBodyPart());
 			writer.println(model.getGETBodyPart());
 
 		} else if (getCurlRequest().startsWith("post?")) {
-			System.out.println("curl POST Request...");
+			System.out.println("CURL : Request Type POST");
 			setCurlRequest(getCurlRequest().replace("post?", ""));
 			if (!getCurlRequest().isEmpty() && getCurlRequest().matches("(.*)=(.*)")) {
 				if (getCurlRequest().matches("(.*)&(.*)")) {
 					String[] temp = getCurlRequest().split("&");
 					for (int i = 0; i < temp.length; i++) {
-						String[] args = temp[i].split("=");
-						model.setParams(args[0], args[1]);
+						String[] args = temp[i].split("="); // need to change
+						model.setParams(args[0], args[1]);// need to change
 					}
 				} else {
-					String[] args = getCurlRequest().split("=");
-					model.setParams(args[0], args[1]);
+					String[] args = getCurlRequest().split("=");// need to change
+					model.setParams(args[0], args[1]);// need to change
 				}
 			}
 			writer.println(model.getPOSTBodyPart());
@@ -182,27 +207,31 @@ public class httpfsServerThread implements Runnable {
 	 * 
 	 */
 	public synchronized void getRequest(/* String fileName */) {
-		String fileName = getClientRequest().substring(4);
-		File filePath;
+		// String fileName = getClientRequest().substring(4);
+		// File filePath;
 		// String fileName = fileName1;
-		if (contentTypeFlag) {
-			fileName = fileName + model.getFileContentHeader();
-		//	filePath = new File(retrieveFilePath(fileName));
-		} else {
-			//filePath = new File(retrieveFilePath(fileName));
-		}
-		filePath = new File(retrieveFilePath(fileName));
+		/*
+		 * if (contentTypeFlag) { fileName = fileName + model.getFileContentHeader(); //
+		 * filePath = new File(retrieveFilePath(fileName)); } else { // filePath = new
+		 * File(retrieveFilePath(fileName)); }
+		 */
+		String fileName = isContentTypeFlag() ? getClientRequest().substring(4) + model.getFileContentHeader()
+				: getClientRequest().substring(4);
+		File filePath = new File(retrieveFilePath(fileName));
+		System.out.println("File Name : " + getClientRequest().substring(4));
+		System.out.println("Path : " + getPathDirectory());
+
 		if (!fileName.contains("/")) {
 			if (filePath.exists()) {
 				if (filePath.isDirectory()) {
-					File[] listOfFiles = filePath.listFiles();
-					for (File file : listOfFiles) {
-						if (file.isFile()) {
-							System.out.println("File      >> " + file.getName());
-							writer.println("File      >> " + file.getName());
-						} else if (file.isDirectory()) {
-							System.out.println("Directory >> " + file.getName());
+					// File[] listOfFiles = filePath.listFiles();
+					for (File file : filePath.listFiles()) {
+						if (file.isDirectory()) {
 							writer.println("Directory >> " + file.getName());
+							System.out.println("Directory >> " + file.getName());
+						} else if (file.isFile()) {
+							writer.println("File      >> " + file.getName());
+							System.out.println("File      >> " + file.getName());
 						}
 					}
 				} else if (filePath.isFile()) {
@@ -214,19 +243,20 @@ public class httpfsServerThread implements Runnable {
 					// boolean dispositionDirectory;
 					if (dispositionFlag) {
 						fileDownloadName = model.getFileDispositionHeader();
-						/*
-						 * if (model.dispositionAttachmentFlag) { if (!downloadPath.exists())
-						 * dispositionDirectory = new File(getPathDirectory() + "/Download").mkdir(); }
-						 */
+						if (model.dispositionAttachmentFlag && !downloadPath.exists()) {
+							/* dispositionDirectory = */new File(getPathDirectory() + "/Download").mkdir();
+						}
+
 					}
 
 					try {
-
 						if (model.dispositionAttachmentFlag) {
-							if (model.dispositionFileFlag)
-								fileWriter = new PrintWriter(downloadPath + "/" + fileDownloadName);
-							else
-								fileWriter = new PrintWriter(downloadPath + "/" + fileName);
+							/*
+							 * if (model.dispositionFileFlag) fileWriter = new PrintWriter(downloadPath +
+							 * "/" + fileDownloadName); else fileWriter = new PrintWriter(downloadPath + "/"
+							 * + fileName);
+							 */							
+							fileWriter = model.dispositionFileFlag ? new PrintWriter(downloadPath + "/" + fileDownloadName) : new PrintWriter(downloadPath + "/" + fileName);
 						}
 						fileReader = new FileReader(filePath);
 						BufferedReader br = new BufferedReader(fileReader);
@@ -235,7 +265,6 @@ public class httpfsServerThread implements Runnable {
 						while ((currentLine = br.readLine()) != null) {
 							fileData = fileData + currentLine;
 							if (dispositionFlag) {
-
 								if (model.dispositionInlineFlag) {
 									writer.println(currentLine);
 								} else if (model.dispositionAttachmentFlag) {
@@ -280,8 +309,7 @@ public class httpfsServerThread implements Runnable {
 	 * @param fileName name of file.
 	 * @param content
 	 */
-	
-	
+
 	public synchronized void postRequest(/* String fileName, String content */) {
 		// File filePath;
 		PrintWriter printWriter;
