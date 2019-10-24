@@ -112,9 +112,8 @@ public class httpfsServerThread implements Runnable {
 					System.out.println(inputRequest);
 					if (inputRequest.matches("(.*):(.*)")) {
 						if (cntFlag == 0) {
-							String[] splitInput = inputRequest.split(":");
-							model.addFileHeaders(splitInput[0].trim(), splitInput[1].trim());
-							System.out.println("MOdel Header " + model.getFileHeaders());
+							model.addHeaders(inputRequest/* splitInput[0].trim(), splitInput[1].trim() */);
+							System.out.println("MOdel Header " + model.getHeaders());
 						}
 					}
 

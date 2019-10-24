@@ -3,12 +3,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
-public class httpfsModel {	
-	//int count = 0;
+public class httpfsModel {
+	// int count = 0;
 	boolean dispositionInlineFlag = false;
 	boolean dispositionAttachmentFlag = false;
 	boolean dispositionFileFlag = false;
-	HashMap<String, String> headerMap;
+	HashMap<String, String> headers;
 	HashMap<String, String> paramMap;
 	ArrayList<String> filesList;
 	String statusCode;
@@ -17,108 +17,120 @@ public class httpfsModel {
 	String uri;
 //	String space = " ";
 	ArrayList<String> fileServerHeader;
-	
-	public httpfsModel(){
+
+	public httpfsModel() {
 		fileServerHeader = new ArrayList<>();
-		headerMap = new HashMap<>();
+		headers = new HashMap<>();
 		paramMap = new HashMap<>();
 		filesList = new ArrayList<>();
-		headerMap.put("Connection", "keep-alive");
-		headerMap.put("Host", "Localhost");
+		headers.put("Connection", "keep-alive");
+		headers.put("Host", "Localhost");
 		Instant instant = Instant.now();
-		headerMap.put("Date", instant.toString());
+		headers.put("Date", instant.toString());
 	}
-	
+
 	public void addhttpfsHeaders(String header) {
 		fileServerHeader.add(header);
 	}
-	
-	public String getFileContentHeader() {	
+
+	public String getFileContentHeader() {
 		String extension = new String();
-		for(int i = 0; i<fileServerHeader.size(); i++) {
-			if(fileServerHeader.get(i).startsWith(Constants.CONTENT_TYPE)) {
+		for (int i = 0; i < fileServerHeader.size(); i++) {
+			if (fileServerHeader.get(i).startsWith(Constants.CONTENT_TYPE)) {
 				String[] temp = fileServerHeader.get(i).split(":");
-				extension=getExtension(temp[1]);				
+				extension = getExtension(temp[1]);
 			}
 		}
 		return extension;
 	}
-	
-	
-	
+
 	private String getExtension(String str) {
-		String ext="";
-		if(str.equals("application/text"))
+		String ext = "";
+		if (str.equals("application/text"))
 			ext = ".txt";
-		else if(str.equals("application/json"))
+		else if (str.equals("application/json"))
 			ext = ".json";
 		return ext;
 	}
 
 	public String getFileDispositionHeader() {
 		String fileName = "";
-		for(int i = 0; i<fileServerHeader.size(); i++) {
-			if(fileServerHeader.get(i).startsWith(Constants.CONTENT_DISPOSITION)) {
+		for (int i = 0; i < fileServerHeader.size(); i++) {
+			if (fileServerHeader.get(i).startsWith(Constants.CONTENT_DISPOSITION)) {
 				String[] temp1 = fileServerHeader.get(i).split(";");
 				String[] temp2 = temp1[0].split(":");
-				if(temp2[1].equals("inline")) {
+				if (temp2[1].equals("inline")) {
 					dispositionInlineFlag = true;
-				}else if(temp2[1].equals("attachment")) {
+				} else if (temp2[1].equals("attachment")) {
 					dispositionAttachmentFlag = true;
-					if(temp1.length == 2) {
+					if (temp1.length == 2) {
 						String temp3[] = temp1[1].split(":");
 						fileName = temp3[1];
 						dispositionFileFlag = true;
 					}
-				}				
+				}
 			}
 		}
 		return fileName;
 	}
-	
-	public void addFileHeaders(String key, String value) {
-		headerMap.put(key, value);
-	}
-	
-	public String getFileHeaders() {
+
+	public String getHeaders() {
 		String head = "";
-		for(Entry<String, String> entry : headerMap.entrySet()) {
-			head += " "+entry.getKey()+": "+entry.getValue()+"\r\n";
+		for (Entry<String, String> entry : headers.entrySet()) {
+			head += " " + entry.getKey() + ": " + entry.getValue() + "\r\n";
 		}
 		return head;
+
 	}
-	
+
+	public void setHeaders(HashMap<String, String> headers) {
+		this.headers = headers;
+	}
+
+	public void addHeaders(String values/* String key, String value */) {
+		String[] value = values.trim().split(":");
+		headers.put(value[0].trim(), value[1].trim());
+	}
+	/*
+	 * public void addFileHeaders(String key, String value) { headerMap.put(key,
+	 * value); }
+	 * 
+	 * public String getFileHeaders() { String head = ""; for(Entry<String, String>
+	 * entry : headerMap.entrySet()) { head +=
+	 * " "+entry.getKey()+": "+entry.getValue()+"\r\n"; } return head; }
+	 */
+
 	public void setStatusCode(String status) {
 		this.statusCode = status;
 	}
-	
+
 	public String getStatusCode() {
 		return this.statusCode;
 	}
-	
+
 	public String getConnectionState() {
-		if(statusCode.equals(Constants.HTTP_200)) 
-			return  "OK";
-		else if(statusCode.equals(Constants.HTTP_400))
-			return  "Bad Request";
-		else if(statusCode.equals(Constants.HTTP_404))
-			return  "Not Found";
-		else 
-			return  "ERROR HTTP";
+		if (statusCode.equals(Constants.HTTP_200))
+			return "OK";
+		else if (statusCode.equals(Constants.HTTP_400))
+			return "Bad Request";
+		else if (statusCode.equals(Constants.HTTP_404))
+			return "Not Found";
+		else
+			return "ERROR HTTP";
 	}
-	
+
 	public void setParams(String key, String value) {
 		paramMap.put(key, value);
 	}
-	
+
 	public String getParams() {
 		String head = "\r\n";
-		for(Entry<String, String> entry : paramMap.entrySet()) {
-			head += " \""+entry.getKey()+"\": \""+entry.getValue()+"\",\r\n";
+		for (Entry<String, String> entry : paramMap.entrySet()) {
+			head += " \"" + entry.getKey() + "\": \"" + entry.getValue() + "\",\r\n";
 		}
 		return head;
 	}
-	
+
 //	public String getOrigin() {
 //		return origin;
 //	}
@@ -126,61 +138,44 @@ public class httpfsModel {
 	public void setUri(String uri) {
 		this.uri = uri;
 	}
-	
+
 	public String getUri() {
 		return this.uri;
 	}
-	
+
 	public void setBody(String body) {
 		this.body = body;
 	}
-	
+
 	public String getBody() {
 		return this.body;
 	}
-	
+
 	public void setFiles(String fileName) {
 		filesList.add(fileName);
 	}
-	
+
 	public String getFiles() {
 		String listOfFiles = "";
-		for(String file : filesList) {
-			listOfFiles += file+",";
+		for (String file : filesList) {
+			listOfFiles += file + ",";
 		}
 		return listOfFiles;
 	}
-	
+
 	public String getHeaderPart() {
-		return "HTTP/1.0 " + getStatusCode() + " " + getConnectionState() +"\r\n"+ getFileHeaders();
+		return "HTTP/1.0 " + getStatusCode() + " " + getConnectionState() + "\r\n" + getHeaders();
 	}
-	
+
 	public String getGETBodyPart() {
-		return 
-				"{\r\n"+
-				" \"args\":{"+
-				getParams()+"},\r\n"+
-				" \"headers\":{\r\n"+
-				getFileHeaders()+"},\r\n"+
-				" \"origin\": "+Constants.ORIGIN+",\r\n"+
-				" \"url\": "+getUri()+",\r\n"+
-				"}";
+		return "{\r\n" + " \"args\":{" + getParams() + "},\r\n" + " \"headers\":{\r\n" + getHeaders() + "},\r\n"
+				+ " \"origin\": " + Constants.ORIGIN + ",\r\n" + " \"url\": " + getUri() + ",\r\n" + "}";
 	}
-	
+
 	public String getPOSTBodyPart() {
-		return 
-				"{\r\n"+" "+
-				"\"args\":{"+" "+
-				getParams()+"},\r\n"+" "+
-				"\"data\":{"+" "+
-				getBody()+"},\r\n"+" "+
-				"\"files\":{\r\n"+" "+
-				this.getFiles()+"},\r\n"+" "+
-				"\"headers\":{\r\n"+
-				getFileHeaders()+" },\r\n"+" "+
-				"\"json\": { },\r\n"+" "+
-				"\"origin\": "+Constants.ORIGIN+",\r\n"+" "+
-				"\"url\": "+this.getUri()+",\r\n"+
-				"}";
+		return "{\r\n" + " " + "\"args\":{" + " " + getParams() + "},\r\n" + " " + "\"data\":{" + " " + getBody()
+				+ "},\r\n" + " " + "\"files\":{\r\n" + " " + this.getFiles() + "},\r\n" + " " + "\"headers\":{\r\n"
+				+ getHeaders() + " },\r\n" + " " + "\"json\": { },\r\n" + " " + "\"origin\": " + Constants.ORIGIN
+				+ ",\r\n" + " " + "\"url\": " + this.getUri() + ",\r\n" + "}";
 	}
 }
