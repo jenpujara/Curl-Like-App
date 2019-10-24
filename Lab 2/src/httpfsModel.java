@@ -9,23 +9,23 @@ public class httpfsModel {
 	boolean dispositionAttachmentFlag = false;
 	boolean dispositionFileFlag = false;
 	HashMap<String, String> headers;
-	HashMap<String, String> paramMap;
+	HashMap<String, String> parameters;
 	ArrayList<String> filesList;
 	String statusCode;
 	String body = "";
-//	String origin = "127.0.0.1"; 
+	// String origin = "127.0.0.1";
 	String uri;
-//	String space = " ";
+	// String space = " ";
 	ArrayList<String> fileServerHeader;
 
 	public httpfsModel() {
+		Instant instant = Instant.now();
 		fileServerHeader = new ArrayList<>();
 		headers = new HashMap<>();
-		paramMap = new HashMap<>();
+		parameters = new HashMap<>();
 		filesList = new ArrayList<>();
 		headers.put("Connection", "keep-alive");
-		headers.put("Host", "Localhost");
-		Instant instant = Instant.now();
+		headers.put("Host", "127.0.0.1");
 		headers.put("Date", instant.toString());
 	}
 
@@ -34,7 +34,7 @@ public class httpfsModel {
 	}
 
 	public String getFileContentHeader() {
-		String extension = new String();
+		String extension = "";
 		for (int i = 0; i < fileServerHeader.size(); i++) {
 			if (fileServerHeader.get(i).startsWith(Constants.CONTENT_TYPE)) {
 				String[] temp = fileServerHeader.get(i).split(":");
@@ -119,22 +119,32 @@ public class httpfsModel {
 			return "ERROR HTTP";
 	}
 
-	public void setParams(String key, String value) {
-		paramMap.put(key, value);
-	}
-
-	public String getParams() {
+	public String getParameters() {
 		String head = "\r\n";
-		for (Entry<String, String> entry : paramMap.entrySet()) {
+		for (Entry<String, String> entry : parameters.entrySet()) {
 			head += " \"" + entry.getKey() + "\": \"" + entry.getValue() + "\",\r\n";
 		}
 		return head;
 	}
 
-//	public String getOrigin() {
-//		return origin;
-//	}
-//	
+	public void setParameters(String values/* String key, String value */) {
+		String[] value = values.trim().split("=");
+		parameters.put(value[0].trim(), value[1].trim());
+	}
+
+	/*
+	 * public void setParams(String key, String value) { parameters.put(key, value);
+	 * }
+	 * 
+	 * public String getParams() { String head = "\r\n"; for (Entry<String, String>
+	 * entry : parameters.entrySet()) { head += " \"" + entry.getKey() + "\": \"" +
+	 * entry.getValue() + "\",\r\n"; } return head; }
+	 */
+
+	// public String getOrigin() {
+	// return origin;
+	// }
+	//
 	public void setUri(String uri) {
 		this.uri = uri;
 	}
@@ -168,12 +178,12 @@ public class httpfsModel {
 	}
 
 	public String getGETBodyPart() {
-		return "{\r\n" + " \"args\":{" + getParams() + "},\r\n" + " \"headers\":{\r\n" + getHeaders() + "},\r\n"
+		return "{\r\n" + " \"args\":{" + getParameters() + "},\r\n" + " \"headers\":{\r\n" + getHeaders() + "},\r\n"
 				+ " \"origin\": " + Constants.ORIGIN + ",\r\n" + " \"url\": " + getUri() + ",\r\n" + "}";
 	}
 
 	public String getPOSTBodyPart() {
-		return "{\r\n" + " " + "\"args\":{" + " " + getParams() + "},\r\n" + " " + "\"data\":{" + " " + getBody()
+		return "{\r\n" + " " + "\"args\":{" + " " + getParameters() + "},\r\n" + " " + "\"data\":{" + " " + getBody()
 				+ "},\r\n" + " " + "\"files\":{\r\n" + " " + this.getFiles() + "},\r\n" + " " + "\"headers\":{\r\n"
 				+ getHeaders() + " },\r\n" + " " + "\"json\": { },\r\n" + " " + "\"origin\": " + Constants.ORIGIN
 				+ ",\r\n" + " " + "\"url\": " + this.getUri() + ",\r\n" + "}";

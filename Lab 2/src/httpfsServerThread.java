@@ -82,13 +82,13 @@ public class httpfsServerThread implements Runnable {
 				if (inputRequest.endsWith(Constants.HTTP_VERSION)) {
 					setHttpcFlag(true);
 					setCurlRequest(inputRequest);
-					System.out.println("Curl Request in Run Method : "  + getCurlRequest());
+					System.out.println("Curl Request in Run Method : " + getCurlRequest());
 					// httpcClientFlag = true;
 				} else if (inputRequest.matches("(GET|POST)/(.*)")) {
 					// httpFileClientFlag = true;
 					setHttpfsFlag(true);
 					setClientRequest(inputRequest);
-					System.out.println("Client Request in Run Method : "  + getClientRequest());
+					System.out.println("Client Request in Run Method : " + getClientRequest());
 				}
 				if (isHttpfsFlag()) {
 					model.addhttpfsHeaders(inputRequest);
@@ -176,13 +176,18 @@ public class httpfsServerThread implements Runnable {
 			if (getCurlRequest().matches("(.*)&(.*)")) {
 				String[] temp = getCurlRequest().split("&");
 				for (int i = 0; i < temp.length; i++) {
-					String[] args = temp[i].split("="); // need to change
-					model.setParams(args[0], args[1]); // need to change
+					/*
+					 * String[] args = temp[i].split("="); // need to change
+					 * model.setParameters(args[0], args[1]); // need to change
+					 */
+					model.setParameters(temp[i]);
 				}
 			} else {
-				String[] args = getCurlRequest().split("="); // need to change
-				model.setParams(args[0], args[1]);// need to change
-			}
+				model.setParameters(getCurlRequest());
+				/*
+				 * String[] args = getCurlRequest().split("="); // need to change
+				 * model.setParameters(args[0], args[1]);// need to change
+				 */ }
 			System.out.println(model.getGETBodyPart());
 			writer.println(model.getGETBodyPart());
 
@@ -193,12 +198,17 @@ public class httpfsServerThread implements Runnable {
 				if (getCurlRequest().matches("(.*)&(.*)")) {
 					String[] temp = getCurlRequest().split("&");
 					for (int i = 0; i < temp.length; i++) {
-						String[] args = temp[i].split("="); // need to change
-						model.setParams(args[0], args[1]);// need to change
+						/*
+						 * String[] args = temp[i].split("="); // need to change
+						 * model.setParameters(args[0], args[1]);// need to change
+						 */ model.setParameters(temp[i]);
 					}
 				} else {
-					String[] args = getCurlRequest().split("=");// need to change
-					model.setParams(args[0], args[1]);// need to change
+					/*
+					 * String[] args = getCurlRequest().split("=");// need to change
+					 * model.setParameters(args[0], args[1]);// need to change
+					 */
+					model.setParameters(getCurlRequest());
 				}
 			}
 			writer.println(model.getPOSTBodyPart());
@@ -210,7 +220,8 @@ public class httpfsServerThread implements Runnable {
 	 * "GET /foo" returns the content of the file named foo in the data
 	 * directory.<br>
 	 * 
-	 * @param fileNam name of file.
+	 * @param fileNam
+	 *            name of file.
 	 * 
 	 */
 	public synchronized void getRequest(/* String fileName */) {
@@ -331,7 +342,8 @@ public class httpfsServerThread implements Runnable {
 	 * with the content of the body of the request.<br>
 	 * options for the POST such as overwrite=true|false.
 	 * 
-	 * @param fileName name of file.
+	 * @param fileName
+	 *            name of file.
 	 * @param content
 	 */
 
