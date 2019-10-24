@@ -24,7 +24,26 @@ public class httpfsClient {
 	static Socket socket;
 	static URI uri;
 	static String url;
-	int port;
+
+	public static String getBody() {
+		return body;
+	}
+
+	public static String getQuery() {
+		return query;
+	}
+
+	public static String getUrl() {
+		return url;
+	}
+
+	public static boolean isBodyFlag() {
+		return bodyFlag;
+	}
+
+	public static boolean isHeaderFlag() {
+		return headerFlag;
+	}
 
 	public static void main(String args[]) {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -43,7 +62,7 @@ public class httpfsClient {
 					}
 					if (splitInput[i].startsWith("http://") || splitInput[i].startsWith("https://")) {
 						setUrl(splitInput[i]);
-					
+
 					}
 					if (splitInput[i].startsWith(Constants.INLINE_DATA_CODE1)
 							|| splitInput[i].startsWith(Constants.INLINE_DATA_CODE2)) {
@@ -56,14 +75,13 @@ public class httpfsClient {
 			e.printStackTrace();
 		}
 		try {
-			System.out.println(" ---> " +getUrl());
+			System.out.println(" ---> " + getUrl());
 			uri = new URI(getUrl());
 			System.out.println(uri.getHost());
 			socket = new Socket(uri.getHost(), uri.getPort());
 			System.out.println(getQuery());
 			System.out.println(uri.getPath().substring(1).trim());
 			setQuery(uri.getPath().substring(1));
-			
 			System.out.println("Server Connection Establlished");
 			sendRequest();
 		} catch (IOException e) {
@@ -118,26 +136,6 @@ public class httpfsClient {
 
 	}
 
-	public static String getBody() {
-		return body;
-	}
-
-	public static String getQuery() {
-		return query;
-	}
-
-	public static String getUrl() {
-		return url;
-	}
-
-	public static boolean isBodyFlag() {
-		return bodyFlag;
-	}
-
-	public static boolean isHeaderFlag() {
-		return headerFlag;
-	}
-
 	public static void setBody(String body) {
 		httpfsClient.body = body;
 	}
@@ -157,6 +155,8 @@ public class httpfsClient {
 	public static void setUrl(String url) {
 		httpfsClient.url = url;
 	}
+
+	int port;
 
 	public int getPort() {
 		return port;

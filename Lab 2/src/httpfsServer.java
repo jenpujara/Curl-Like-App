@@ -16,43 +16,29 @@ import java.net.Socket;
  */
 public class httpfsServer {
 
+	static boolean isDebugging;
+
 	static boolean isPort;
 
-	public static boolean isPort() {
-		return isPort;
-	}
+	static String pathDirectory = "";
 
-	public static void setPort(boolean isPort) {
-		httpfsServer.isPort = isPort;
+	static int port;
+
+	public static String getPathDirectory() {
+		return pathDirectory;
 	}
 
 	public static int getPort() {
 		return port;
 	}
 
-	public static void setPort(int port) {
-		httpfsServer.port = port;
-	}
-
-	public static String getPathDirectory() {
-		return pathDirectory;
-	}
-
-	public static void setPathDirectory(String pathDirectory) {
-		httpfsServer.pathDirectory = pathDirectory;
-	}
-
 	public static boolean isDebugging() {
 		return isDebugging;
 	}
 
-	public static void setDebugging(boolean isDebugging) {
-		httpfsServer.isDebugging = isDebugging;
+	public static boolean isPort() {
+		return isPort;
 	}
-
-	static int port;
-	static String pathDirectory = "";
-	static boolean isDebugging;
 
 	/**
 	 * main method used to create a Server with port Number 5555.
@@ -99,5 +85,21 @@ public class httpfsServer {
 			Thread thread = new Thread(serverThread);
 			thread.start();
 		}
+	}
+
+	public static void setDebugging(boolean isDebugging) {
+		httpfsServer.isDebugging = isDebugging;
+	}
+
+	public static void setPathDirectory(String pathDirectory) {
+		httpfsServer.pathDirectory = pathDirectory;
+	}
+
+	public static void setPort(boolean isPort) {
+		httpfsServer.isPort = isPort;
+	}
+
+	public static void setPort(int port) {
+		httpfsServer.port = port;
 	}
 }

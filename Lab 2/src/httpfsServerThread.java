@@ -6,6 +6,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map.Entry;
 
 public class httpfsServerThread implements Runnable {
 
@@ -74,14 +77,18 @@ public class httpfsServerThread implements Runnable {
 			// OutputStream output = socket.getOutputStream();
 			writer = new PrintWriter(socket.getOutputStream());
 			while ((inputRequest = br.readLine()) != null) {
+				System.out.println("Input Request in Run Method :  " + inputRequest);
+
 				if (inputRequest.endsWith(Constants.HTTP_VERSION)) {
 					setHttpcFlag(true);
 					setCurlRequest(inputRequest);
+					System.out.println("Curl Request in Run Method : "  + getCurlRequest());
 					// httpcClientFlag = true;
 				} else if (inputRequest.matches("(GET|POST)/(.*)")) {
 					// httpFileClientFlag = true;
 					setHttpfsFlag(true);
 					setClientRequest(inputRequest);
+					System.out.println("Client Request in Run Method : "  + getClientRequest());
 				}
 				if (isHttpfsFlag()) {
 					model.addhttpfsHeaders(inputRequest);
@@ -107,6 +114,7 @@ public class httpfsServerThread implements Runnable {
 						if (cntFlag == 0) {
 							String[] splitInput = inputRequest.split(":");
 							model.addFileHeaders(splitInput[0].trim(), splitInput[1].trim());
+							System.out.println("MOdel Header " + model.getFileHeaders());
 						}
 					}
 
@@ -137,7 +145,6 @@ public class httpfsServerThread implements Runnable {
 				curlRequest();
 			}
 		}
-
 		if (isHttpfsFlag()) {
 			System.out.println("Client Request : " + getClientRequest());
 			if (getClientRequest().startsWith(Constants.GET_METHOD)) {
@@ -158,6 +165,7 @@ public class httpfsServerThread implements Runnable {
 		model.setStatusCode(Constants.HTTP_200);
 		model.setUri("http://127.0.0.1:" + getPort() + "/" + getCurlRequest());
 		writer.println(model.getHeaderPart());
+		System.out.println("Header Part " + model.getHeaderPart());
 		checkCurlOption();
 	}
 
@@ -225,13 +233,29 @@ public class httpfsServerThread implements Runnable {
 			if (filePath.exists()) {
 				if (filePath.isDirectory()) {
 					// File[] listOfFiles = filePath.listFiles();
+					HashMap<String, ArrayList<String>> output = new HashMap<>();
+					output.put("Directory >> ", new ArrayList<String>());
+					output.put("File      >> ", new ArrayList<String>());
 					for (File file : filePath.listFiles()) {
 						if (file.isDirectory()) {
-							writer.println("Directory >> " + file.getName());
-							System.out.println("Directory >> " + file.getName());
+							ArrayList<String> temp = output.get("Directory >> ");
+							temp.add(file.getName());
+							output.replace("Directory >> ", temp);
+							// writer.println("Directory >> " + file.getName());
+							// System.out.println("Directory >> " + file.getName());
 						} else if (file.isFile()) {
-							writer.println("File      >> " + file.getName());
-							System.out.println("File      >> " + file.getName());
+							ArrayList<String> temp = output.get("File      >> ");
+							temp.add(file.getName());
+							output.replace("File      >> ", temp);
+							// writer.println("File >> " + file.getName());
+							// System.out.println("File >> " + file.getName());
+						}
+					}
+					for (Entry<String, ArrayList<String>> entry : output.entrySet()) {
+						ArrayList<String> temp = entry.getValue();
+						for (int i = 0; i < temp.size(); i++) {
+							writer.println(entry.getKey() + temp.get(i));
+							System.out.println(entry.getKey() + temp.get(i));
 						}
 					}
 				} else if (filePath.isFile()) {
@@ -255,8 +279,10 @@ public class httpfsServerThread implements Runnable {
 							 * if (model.dispositionFileFlag) fileWriter = new PrintWriter(downloadPath +
 							 * "/" + fileDownloadName); else fileWriter = new PrintWriter(downloadPath + "/"
 							 * + fileName);
-							 */							
-							fileWriter = model.dispositionFileFlag ? new PrintWriter(downloadPath + "/" + fileDownloadName) : new PrintWriter(downloadPath + "/" + fileName);
+							 */
+							fileWriter = model.dispositionFileFlag
+									? new PrintWriter(downloadPath + "/" + fileDownloadName)
+									: new PrintWriter(downloadPath + "/" + fileName);
 						}
 						fileReader = new FileReader(filePath);
 						BufferedReader br = new BufferedReader(fileReader);
