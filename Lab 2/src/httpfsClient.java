@@ -24,29 +24,54 @@ public class httpfsClient {
 	static Socket socket;
 	static URI uri;
 	static String url;
-
+	
+	/**
+	 * getter method for fetching the body of the request.
+	 * @return body
+	 */
 	public static String getBody() {
 		return body;
 	}
 
+	/**
+	 * getter method for query retrieval
+	 * @return query
+	 */
 	public static String getQuery() {
 		return query;
 	}
-
+	
+	/**
+	 * getter method for getting the url from the request
+	 * @return url
+	 */
 	public static String getUrl() {
 		return url;
 	}
-
+	
+	/**
+	 * method to check if the content is present or not.
+	 * @return bodyFlag
+	 */
 	public static boolean isBodyFlag() {
 		return bodyFlag;
 	}
-
+	
+	/**
+	 * method to check if the header is present or not.
+	 * @return headerFlag
+	 */
 	public static boolean isHeaderFlag() {
 		return headerFlag;
 	}
 
+	/**
+	 * Main method implementing the HTTP File Manager Client.
+	 * @param args
+	 */
 	public static void main(String args[]) {
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		InputStreamReader inputReader = new InputStreamReader(System.in);
+		BufferedReader br = new BufferedReader(inputReader);
 		String input;
 		headerList = new ArrayList<>();
 		setHeaderFlag(false);
@@ -71,27 +96,29 @@ public class httpfsClient {
 					}
 				}
 			}
+			
+			try {
+//				System.out.println("Requested Url: " + getUrl());
+				uri = new URI(getUrl());
+//				System.out.println(uri.getHost());
+				socket = new Socket(uri.getHost(), uri.getPort());
+//				System.out.println(uri.getPath().substring(1).trim());
+				setQuery(uri.getPath().substring(1).trim());
+				System.out.println("Server Connection Established for " + getQuery());
+				sendRequest();
+			} catch (IOException e) {
+				System.out.println(Constants.HTTP_404_ERROR + " : Host Not Found");
+			} catch (URISyntaxException e) {
+				e.printStackTrace();
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		try {
-			System.out.println(" ---> " + getUrl());
-			uri = new URI(getUrl());
-			System.out.println(uri.getHost());
-			socket = new Socket(uri.getHost(), uri.getPort());
-			System.out.println(getQuery());
-			System.out.println(uri.getPath().substring(1).trim());
-			setQuery(uri.getPath().substring(1));
-			System.out.println("Server Connection Establlished");
-			sendRequest();
-		} catch (IOException e) {
-			System.out.println(Constants.HTTP_404_ERROR + " : Host Not Found");
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-		}
-
 	}
-
+	
+	/**
+	 * method to display the data received from client request.
+	 */
 	public static void receiveData() {
 		BufferedReader br = null;
 		try {
@@ -111,7 +138,10 @@ public class httpfsClient {
 			}
 		}
 	}
-
+	
+	/**
+	 * this method is used to form the client request using the data sent to the server.
+	 */
 	public static void sendRequest() {
 		try {
 			PrintWriter writer = new PrintWriter(socket.getOutputStream());
@@ -135,33 +165,61 @@ public class httpfsClient {
 		}
 
 	}
-
+	
+	/**
+	 * setter method to set the body of the request
+	 * @param body
+	 */
 	public static void setBody(String body) {
 		httpfsClient.body = body;
 	}
 
+	/**
+	 * setter method to set the body flag to true or false
+	 * @param bodyFlag
+	 */
 	public static void setBodyFlag(boolean bodyFlag) {
 		httpfsClient.bodyFlag = bodyFlag;
 	}
-
+	
+	/**
+	 * setter method to set the header flag to true or false
+	 * @param headerFlag
+	 */
 	public static void setHeaderFlag(boolean headerFlag) {
 		httpfsClient.headerFlag = headerFlag;
 	}
-
+	
+	/**
+	 * setter method to set the query string in the request.
+	 * @param query
+	 */
 	public static void setQuery(String query) {
 		httpfsClient.query = query;
 	}
-
+	
+	/**
+	 * setter method to set the url of the client request.
+	 * @param url
+	 */
 	public static void setUrl(String url) {
 		httpfsClient.url = url;
 	}
 
 	int port;
 
+	/**
+	 * getter method to retrieve the port number on which the server is listening
+	 * @return port
+	 */
 	public int getPort() {
 		return port;
 	}
-
+	
+	/**
+	 * setter method to set the port number on which the server listens
+	 * @param port
+	 */
 	public void setPort(int port) {
 		this.port = port;
 	}

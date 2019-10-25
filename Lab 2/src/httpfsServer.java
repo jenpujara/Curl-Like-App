@@ -5,13 +5,10 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 /**
+ /**
  * Server class.
- * @author 
- *
- */
-
-/**
- * Server class.
+ * @author Himen Sidhpura
+ * @auhtor Jenny Mistry 
  *
  */
 public class httpfsServer {
@@ -24,35 +21,51 @@ public class httpfsServer {
 
 	static int port;
 
+	/**
+	 * getter method for getting Directory Path
+	 * @return pathDirectory
+	 */
 	public static String getPathDirectory() {
 		return pathDirectory;
 	}
-
+	
+	/**
+	 * getter method for getting Port Number
+	 * @return port
+	 */
 	public static int getPort() {
 		return port;
 	}
-
+	
+	/**
+	 * method for checking if debugging mode is on or not
+	 * @return isDebugging
+	 */
 	public static boolean isDebugging() {
 		return isDebugging;
 	}
 
+	/**
+	 * method to check if port is active or not
+	 * @return isPort
+	 */
 	public static boolean isPort() {
 		return isPort;
 	}
 
 	/**
-	 * main method used to create a Server with port Number 5555.
+	 * main method used to create a Server with port Number 8080.
 	 * 
 	 * @param args args.
 	 * @throws IOException Input-Output Exception.
-	 */
+	 */	
 	public static void main(String args[]) throws IOException {
 		setDebugging(false);
 		setPort(8080);
 		setPort(false);
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-		String input = br.readLine().trim();
-		String[] splitStrings = input.split(" ");
+		InputStreamReader inReader = new InputStreamReader(System.in); 
+		BufferedReader br = new BufferedReader(inReader);
+		String[] splitStrings = br.readLine().trim().split(" ");
 
 		for (int i = 0; i < splitStrings.length; i++) {
 			if (splitStrings[i].equals(Constants.PORT_CODE)) {
@@ -62,7 +75,7 @@ public class httpfsServer {
 			if (splitStrings[i].equals(Constants.PATH_DIRECTORY)) {
 				setPathDirectory(splitStrings[++i]);
 			} else {
-				setPathDirectory("C:/Users/Himen/Desktop");
+				setPathDirectory("C:/Users/Deep/Desktop");
 			}
 			if (splitStrings[i].equals(Constants.DEBUGGING)) {
 				setDebugging(true);
@@ -86,19 +99,35 @@ public class httpfsServer {
 			thread.start();
 		}
 	}
-
+	
+	/**
+	 * setter method to set the debugging mode
+	 * @param isDebugging
+	 */
 	public static void setDebugging(boolean isDebugging) {
 		httpfsServer.isDebugging = isDebugging;
 	}
 
+	/**
+	 * setter method for setting Directory Path
+	 * @param pathDirectory path for Directory
+	 */
 	public static void setPathDirectory(String pathDirectory) {
 		httpfsServer.pathDirectory = pathDirectory;
 	}
 
+	/**
+	 * setter method for setting Mode of port
+	 * @param isPort
+	 */
 	public static void setPort(boolean isPort) {
 		httpfsServer.isPort = isPort;
 	}
-
+	
+	/**
+	 * setter method for setting Port Number
+	 * @param port
+	 */
 	public static void setPort(int port) {
 		httpfsServer.port = port;
 	}

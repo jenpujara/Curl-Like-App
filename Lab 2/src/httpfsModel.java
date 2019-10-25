@@ -177,12 +177,12 @@ public class httpfsModel {
 		return "HTTP/1.0 " + getStatusCode() + " " + getConnectionState() + "\r\n" + getHeaders();
 	}
 
-	public String getGETBodyPart() {
+	public String getGETBody() {
 		return "{\r\n" + " \"args\":{" + getParameters() + "},\r\n" + " \"headers\":{\r\n" + getHeaders() + "},\r\n"
 				+ " \"origin\": " + Constants.ORIGIN + ",\r\n" + " \"url\": " + getUri() + ",\r\n" + "}";
 	}
 
-	public String getPOSTBodyPart() {
+	public String getPOSTBody() {
 		return "{\r\n" + " " + "\"args\":{" + " " + getParameters() + "},\r\n" + " " + "\"data\":{" + " " + getBody()
 				+ "},\r\n" + " " + "\"files\":{\r\n" + " " + this.getFiles() + "},\r\n" + " " + "\"headers\":{\r\n"
 				+ getHeaders() + " },\r\n" + " " + "\"json\": { },\r\n" + " " + "\"origin\": " + Constants.ORIGIN
