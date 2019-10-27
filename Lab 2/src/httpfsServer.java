@@ -75,7 +75,7 @@ public class httpfsServer {
 			if (splitStrings[i].equals(Constants.PATH_DIRECTORY)) {
 				setPathDirectory(splitStrings[++i]);
 			} else {
-				setPathDirectory("C:/Users/Deep/Desktop");
+				setPathDirectory(Constants.PATH_TO_DIRECTORY);
 			}
 			if (splitStrings[i].equals(Constants.DEBUGGING)) {
 				setDebugging(true);

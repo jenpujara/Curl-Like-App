@@ -6,6 +6,7 @@ import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Map.Entry;
 
 /**
  * Client class
@@ -105,7 +106,7 @@ public class httpfsClient {
 //				System.out.println(uri.getPath().substring(1).trim());
 				setQuery(uri.getPath().substring(1).trim());
 				System.out.println("Server Connection Established for " + getQuery());
-				sendRequest();
+				sendRequest(getQuery());
 			} catch (IOException e) {
 				System.out.println(Constants.HTTP_404_ERROR + " : Host Not Found");
 			} catch (URISyntaxException e) {
@@ -119,14 +120,47 @@ public class httpfsClient {
 	/**
 	 * method to display the data received from client request.
 	 */
-	public static void receiveData() {
+	public static void receiveData(String query) {
 		BufferedReader br = null;
 		try {
 			br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			String out = "";
+			boolean tempFlag = false;
+			ArrayList<String> fileList = new ArrayList<>();
+			ArrayList<String> directoryList = new ArrayList<>();
 			while ((out = br.readLine()) != null) {
-				System.out.println(out);
+				if(!query.equals(Constants.GET_METHOD+"/")) {
+					System.out.println(out);
+				}
+				
+				else {
+					tempFlag = true;
+					String[] temp = out.split(">>");
+					if(temp[0].trim().equals("Directory")) {
+						directoryList.add(temp[1].trim());
+					}
+					if(temp[0].trim().equals("File")) {
+						fileList.add(temp[1].trim());
+					}
+				}		
 			}
+			
+			if(tempFlag) {
+				System.out.println("------------");
+				System.out.println("DIRECTORIES: ");
+				System.out.println("------------");
+				for(String str: directoryList) {
+					System.out.println(str);
+				}
+				
+				System.out.println("-------");
+				System.out.println("FILES: ");
+				System.out.println("-------");
+				for(String str: fileList) {
+					System.out.println(str);
+				}
+			}
+
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -142,7 +176,7 @@ public class httpfsClient {
 	/**
 	 * this method is used to form the client request using the data sent to the server.
 	 */
-	public static void sendRequest() {
+	public static void sendRequest(String query) {
 		try {
 			PrintWriter writer = new PrintWriter(socket.getOutputStream());
 			writer.println(getQuery());
@@ -157,7 +191,7 @@ public class httpfsClient {
 
 			writer.println("\r\n");
 			writer.flush();
-			receiveData();
+			receiveData(query);
 			writer.close();
 			socket.close();
 		} catch (IOException io) {

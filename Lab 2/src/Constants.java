@@ -45,4 +45,6 @@ public class Constants {
 	public static final String READFILE_CODE = "-f";
 	public static final String SERVER_PORT_CODE = "-p";
 	public static final String VERBOSE_CODE = "-v";
+	public static final String IP_ADDRESS = "127.0.0.1";
+	public static final String PATH_TO_DIRECTORY ="C:/Users/Deep/Desktop";
 }

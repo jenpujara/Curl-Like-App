@@ -216,7 +216,7 @@ public class httpfsServerThread implements Runnable {
 	public synchronized void curlRequest() {
 		setCurlRequest(getCurlRequest().replace("GET /", "").replace("POST /", "").replace("HTTP/1.1", ""));
 		model.setStatusCode(Constants.HTTP_200);
-		model.setUri("http://127.0.0.1:" + getPort() + "/" + getCurlRequest());
+		model.setUri("http://" + Constants.IP_ADDRESS + ":" + getPort() + "/" + getCurlRequest());
 		writer.println(model.getHeaderPart());
 		System.out.println("Header Part " + model.getHeaderPart());
 		checkCurlOption();
@@ -328,11 +328,31 @@ public class httpfsServerThread implements Runnable {
 							// System.out.println("File >> " + file.getName());
 						}
 					}
+					System.out.println("------------");
+					System.out.println("DIRECTORIES: ");
+					System.out.println("------------");
 					for (Entry<String, ArrayList<String>> entry : output.entrySet()) {
-						ArrayList<String> temp = entry.getValue();
+						ArrayList<String> temp = entry.getValue();						
 						for (int i = 0; i < temp.size(); i++) {
 							writer.println(entry.getKey() + temp.get(i));
-							System.out.println(entry.getKey() + temp.get(i));
+//							System.out.println(entry.getKey() + temp.get(i));
+							if(entry.getKey().equals("Directory >> ")) {
+								System.out.println(temp.get(i));
+							}
+						}
+					}
+					
+					System.out.println("-------");
+					System.out.println("FILES: ");
+					System.out.println("-------");
+					for (Entry<String, ArrayList<String>> entry : output.entrySet()) {
+						ArrayList<String> temp = entry.getValue();						
+						for (int i = 0; i < temp.size(); i++) {
+							writer.println(entry.getKey() + temp.get(i));
+//							System.out.println(entry.getKey() + temp.get(i));
+							if(entry.getKey().equals("File      >> ")) {
+								System.out.println(temp.get(i));
+							}
 						}
 					}
 				} else if (filePath.isFile()) {
