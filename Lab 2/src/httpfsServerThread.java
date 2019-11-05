@@ -21,86 +21,38 @@ import java.util.Map.Entry;
  */
 public class httpfsServerThread implements Runnable {
 
-	/**Flag variable to check if Content-Type is used or not **/
 	boolean contentTypeFlag = false;
-	
-	/**Flag variable to check if File Disposition is used or not **/
 	boolean dispositionFlag = false;
-	
-	/**Flag variable to check if inline mode is true or false **/
 	boolean inLineFlag = false;
-	
-	/**Flag variable to check if File Attachment is present or not **/
 	boolean attachmentFlag = false;
-	
-	/**Flag variable to check if File is used or not**/
 	boolean fileFlag = false;
-	
-	/**Flag variable to check if request is of type httpc **/
 	boolean httpcFlag = false;
-	
-	/**Flag variable to check if request is of type httpfs **/
 	boolean httpfsFlag = false;
-	
-	/** Socket variable for client server communication using HTTP protocol **/
 	private Socket socket;
-	
-	/** PrintWriter to write data **/
 	private PrintWriter writer = null;
-	
-	/** String that displays the entire client request **/
 	private String inputRequest;
-	
-	/** Number of clients that are simultaneously sending request to the sender **/
 	int clientInstance;
-	
-	/**ArrayList to store the header of the file **/
 	ArrayList<String> fileHeader;
-	
-	/** HashMap to store header **/
 	Map<String, String> headers;
-	
-	/** HashMap that holds parameters **/
 	Map<String, String> parameters;
-	
-	/** ArrayList to store the list of files **/
 	ArrayList<String> filesList;
-	
-	/** variable to hold the content of the request **/
 	String content;
-	
-	/** status code of the request **/
 	String statusCode;
-	
-	/** Determines URI of the request **/
 	String uri;
-	
-	/** Represents the port number on which the server listens to the client request **/
 	int port;
-	
-	/** path to the Directory **/
 	String pathDirectory;
-	
-	/** client Request of type httpfs **/
 	String clientRequest;
-	
-	/** client Request of type httpc **/
 	String curlRequest;
-	
-	/** variable to store content of the request **/
 	String body;
 
 	/**
 	 * Parameterized constructor for the httpfsServerThread class
 	 * 
-	 * @param serverClient
-	 *            The client from which the server receives and processes the
-	 *            request
-	 * @param pathDirectory1
-	 *            Directory path to which the user has access to
-	 * @param counter
-	 *            Counter to count the number of clients sending simultaneous
-	 *            requests to Server
+	 * @param serverClient   The client from which the server receives and processes
+	 *                       the request
+	 * @param pathDirectory1 Directory path to which the user has access to
+	 * @param counter        Counter to count the number of clients sending
+	 *                       simultaneous requests to Server
 	 */
 	public httpfsServerThread(Socket serverClient, String pathDirectory1, int counter) {
 		this.socket = serverClient;
@@ -112,7 +64,7 @@ public class httpfsServerThread implements Runnable {
 		parameters = new HashMap<>();
 		headers = new HashMap<>();
 		headers.put("Connection", "keep-alive");
-		headers.put("Host", Constants.IP_ADDRESS);
+		headers.put("Host", "Localhost");
 		headers.put("Date", instant.toString());
 	}
 
@@ -129,7 +81,7 @@ public class httpfsServerThread implements Runnable {
 				if (inputRequest.endsWith(Constants.HTTP_VERSION)) {
 					setHttpcFlag(true);
 					setCurlRequest(inputRequest);
-				} else if (inputRequest.matches(Constants.REG3)) {
+				} else if (inputRequest.matches("(GET|POST)/(.*)")) {
 					setHttpfsFlag(true);
 					setClientRequest(inputRequest);
 				}
@@ -173,7 +125,7 @@ public class httpfsServerThread implements Runnable {
 	 * Method to check if the client is of type httpc or httpfs
 	 */
 	private void inspectClientFlag() {
-		if (isHttpcFlag() && getCurlRequest().matches(Constants.REG4)) {
+		if (isHttpcFlag() && getCurlRequest().matches("(GET|POST) /(.*)")) {
 			curlRequest();
 		}
 		if (isHttpfsFlag()) {
@@ -218,7 +170,7 @@ public class httpfsServerThread implements Runnable {
 	 */
 	public void postCurlOption() {
 		setCurlRequest(getCurlRequest().replace("post?", ""));
-		if (!getCurlRequest().isEmpty() && getCurlRequest().matches(Constants.REG5)) {
+		if (!getCurlRequest().isEmpty() && getCurlRequest().matches("(.*)=(.*)")) {
 			if (getCurlRequest().matches(Constants.REG2)) {
 				String[] temp = getCurlRequest().split("&");
 				for (int i = 0; i < temp.length; i++) {
@@ -257,7 +209,29 @@ public class httpfsServerThread implements Runnable {
 		String fileName = isContentTypeFlag() ? getClientRequest().substring(4) + getFileContentHeader()
 				: getClientRequest().substring(4);
 		File filePath = new File(retrieveFilePath(fileName));
-		if (!fileName.contains(Constants.SLASH)) {
+		if (isContentTypeFlag()) {
+			try {
+				if (filePath.exists()) {
+					BufferedReader br = new BufferedReader(new FileReader(filePath));
+					String line;
+					writer.println("File Content");
+					while ((line = br.readLine()) != null) {
+						writer.println(line);
+					}
+					writer.println("Operation Status : Success");
+					br.close();
+				} else {
+					printOutput(Constants.HTTP_404_ERROR);
+				}
+
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} else if (!fileName.contains(Constants.SLASH)) {
 			if (filePath.exists()) {
 				if (filePath.isDirectory()) {
 					HashMap<String, ArrayList<String>> output = new HashMap<>();
@@ -295,8 +269,12 @@ public class httpfsServerThread implements Runnable {
 				} else if (filePath.isFile()) {
 					PrintWriter fileWriter = null;
 					File downloadPath = new File(getPathDirectory() + Constants.PATH_TO_DOWNLOAD);
-					if (isDispositionFlag() && (isAttachmentFlag() && !downloadPath.exists())) {
-						new File(getPathDirectory() + Constants.PATH_TO_DOWNLOAD).mkdir();
+					if (isDispositionFlag()) {
+						getFileDispositionHeader();
+						if ((isAttachmentFlag() && !downloadPath.exists())) {
+							System.out.println("Download Folder Created : "
+									+ new File(getPathDirectory() + Constants.PATH_TO_DOWNLOAD).mkdir());
+						}
 					}
 					try {
 						if (isAttachmentFlag()) {
@@ -392,50 +370,26 @@ public class httpfsServerThread implements Runnable {
 		this.body = body;
 	}
 
-	/**
-	 * method to check if inline mode is used or not
-	 * @return inLineFlag
-	 */
 	public boolean isInLineFlag() {
 		return inLineFlag;
 	}
 
-	/**
-	 * setter method to set the inLineFlag to true or false
-	 * @param inLineFlag
-	 */
 	public void setInLineFlag(boolean inLineFlag) {
 		this.inLineFlag = inLineFlag;
 	}
-	
-	/**
-	 * method to check if attachment is present or not
-	 * @return attachmentFlag
-	 */
+
 	public boolean isAttachmentFlag() {
 		return attachmentFlag;
 	}
 
-	/**
-	 * setter method to set the file attachment
-	 * @param attachmentFlag
-	 */
 	public void setAttachmentFlag(boolean attachmentFlag) {
 		this.attachmentFlag = attachmentFlag;
 	}
-	
-	/**
-	 * method to check if file is used or not
-	 * @return fileFlag
-	 */
+
 	public boolean isFileFlag() {
 		return fileFlag;
 	}
-	
-	/**
-	 * setter method to set the File flag
-	 * @param fileFlag
-	 */
+
 	public void setFileFlag(boolean fileFlag) {
 		this.fileFlag = fileFlag;
 	}
@@ -637,12 +591,20 @@ public class httpfsServerThread implements Runnable {
 		return ext.trim();
 	}
 
-	private String getExtension(String ext) {
-		if (ext.equals("application/text"))
-			return ".txt";
-		else if (ext.equals("application/json"))
-			return ".json";
-		return "";
+	public String getExtension(String ext) {
+		String temp = "";
+		switch (ext.trim()) {
+		case "application/text":
+			temp = ".txt";
+			break;
+		case "application/json":
+			temp = ".json";
+			break;
+		default:
+			temp = "";
+			break;
+		}
+		return temp;
 	}
 
 	public String getHeaders() {
@@ -662,50 +624,26 @@ public class httpfsServerThread implements Runnable {
 		headers.put(value[0].trim(), value[1].trim());
 	}
 
-	/**
-	 * method used to fetch the body of the request of type GET
-	 * 
-	 * @return GET body
-	 */
 	public String getGETBody() {
-		return "{\r\n" + " \"args\":{" + getParameters().trim() + Constants.STR2 + " \"headers\":{\r\n"
-				+ getHeaders().trim() + Constants.STR2 + " \"origin\": " + Constants.ORIGIN + Constants.STR1
-				+ " \"url\": " + getUri().trim() + Constants.STR1 + "}";
+		return "{\r\n" + " \"args\":{" + getParameters() + "},\r\n" + " \"headers\":{\r\n" + getHeaders() + "},\r\n"
+				+ " \"origin\": " + Constants.ORIGIN + ",\r\n" + " \"url\": " + getUri() + ",\r\n" + "}";
 	}
 
-	/**
-	 * method used to fetch the body of the request of type POST
-	 * 
-	 * @return POST body
-	 */
 	public String getPOSTBody() {
-		return "{\r\n" + " " + "\"args\":{" + " " + getParameters().trim() + Constants.STR2 + " " + "\"data\":{" + " "
-				+ getContent().trim() + Constants.STR2 + " " + "\"files\":{\r\n" + " " + getFiles().trim()
-				+ Constants.STR2 + " " + "\"headers\":{\r\n" + getHeaders().trim() + " },\r\n" + " "
-				+ "\"json\": { },\r\n" + " " + " \"origin\": " + Constants.ORIGIN + Constants.STR1 + " " + "\"url\": "
-				+ getUri().trim() + Constants.STR1 + "}";
+		return "{\r\n" + " " + "\"args\":{" + " " + this.getParameters() + "},\r\n" + " " + "\"data\":{" + " "
+				+ this.getContent() + "},\r\n" + " " + "\"files\":{\r\n" + " " + getFiles() + "},\r\n" + " "
+				+ "\"headers\":{\r\n" + this.getHeaders() + " },\r\n" + " " + "\"json\": { },\r\n" + " "
+				+ "\"origin\": " + Constants.ORIGIN + ",\r\n" + " " + "\"url\": " + getUri() + ",\r\n" + "}";
 	}
-	
-	/**
-	 * getter method to fetch content
-	 * @return content
-	 */
+
 	public String getContent() {
 		return content;
 	}
 
-	/**
-	 * setter method to set the content
-	 * @param content
-	 */
 	public void setContent(String content) {
 		this.content = content;
 	}
 
-	/**
-	 * setter method to set the file using the name of file
-	 * @param fileName
-	 */
 	public void setFiles(String fileName) {
 		filesList.add(fileName);
 	}
@@ -721,10 +659,6 @@ public class httpfsServerThread implements Runnable {
 		return temp.toString();
 	}
 
-	/**
-	 * setter method to set the status code
-	 * @param status
-	 */
 	public void setStatusCode(String status) {
 		this.statusCode = status;
 	}
@@ -737,26 +671,28 @@ public class httpfsServerThread implements Runnable {
 	public String getStatusCode() {
 		return this.statusCode;
 	}
-	
-	/**
-	 * getter method to get status of connection
-	 * @return State
-	 */
+
 	public String getConnectionState() {
-		if (getStatusCode().equals(Constants.HTTP_200))
-			return "OK";
-		else if (getStatusCode().equals(Constants.HTTP_400))
-			return "Bad Request";
-		else if (getStatusCode().equals(Constants.HTTP_404))
-			return "Not Found";
-		else
-			return "ERROR HTTP";
+		String temp = getStatusCode();
+		String sCode = "";
+		switch (temp) {
+		case Constants.HTTP_200:
+			sCode = "OK";
+			break;
+		case Constants.HTTP_400:
+			sCode = "Bad Request";
+			break;
+		case Constants.HTTP_404:
+			sCode = "Not Found";
+			break;
+		default:
+			sCode = "ERROR HTTP";
+			break;
+		}
+		return sCode;
 	}
 
-	/**
-	 * getter method to retrieve the parameters
-	 * @return Parameters
-	 */
+
 	public String getParameters() {
 		StringBuilder temp = new StringBuilder();
 		temp.append("\r\n");
@@ -794,10 +730,6 @@ public class httpfsServerThread implements Runnable {
 		return this.uri;
 	}
 
-	/**
-	 * method to display the output
-	 * @param msg
-	 */
 	public void printOutput(String msg) {
 		writer.println(msg);
 		System.out.println(msg);

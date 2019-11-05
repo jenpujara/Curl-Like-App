@@ -12,17 +12,13 @@ import java.net.Socket;
  *
  */
 public class httpfsServer {
-	
-	/** Boolean variable that determines if the debugging mode is on or not **/
+
 	static boolean isDebugging;
 
-	/** variable to check if the port is active or not **/
 	static boolean isPort;
-	
-	/** path to the Directory **/
+
 	static String pathDirectory = "";
-	
-	/** Port Number on which the server listens to the client request **/
+
 	static int port;
 
 	/**

@@ -15,28 +15,14 @@ import java.util.ArrayList;
  *
  */
 public class httpfsClient {
-	/** variable to store content of the request **/
+
 	static String body;
-	
-	/** Flag variable to handle request content **/
 	static boolean bodyFlag;
-	
-	/** Flag variable to handle the header of the request **/
 	static boolean headerFlag;
-	
-	/** ArrayList to store headers of the request **/
 	static ArrayList<String> headerList;
-	
-	/** String that determines the query fired in the request **/
 	static String query;
-	
-	/** Socket variable for client server communication using HTTP protocol **/
 	static Socket socket;
-	
-	/** Determines URI of the request **/
 	static URI uri;
-	
-	/** Request URL **/
 	static String url;
 
 	/**
@@ -261,7 +247,6 @@ public class httpfsClient {
 		httpfsClient.url = url;
 	}
 
-	/** Represents the port number on which the server listens to the client request **/
 	int port;
 
 	/**
