@@ -1,3 +1,15 @@
+/*
+ * https://www.w3.org/Protocols/rfc1341/4_Content-Type.html
+ * https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Disposition
+ * https://stackoverflow.com/questions/5278975/http-response-header-content-disposition-for-attachments
+ * https://stackoverflow.com/questions/16601428/how-to-set-content-disposition-and-filename-when-using-filesystemresource-to/22243867#22243867
+ * https://www.javatpoint.com/java-regex
+ * https://www.vogella.com/tutorials/JavaRegularExpressions/article.html
+ * https://docs.oracle.com/javase/tutorial/networking/sockets/readingWriting.html
+ * https://stackoverflow.com/questions/12715321/java-networking-explain-inputstream-and-outputstream-in-socket
+ * https://github.com/Mananp96/Curl-like-app/tree/master/TCPClient-Server
+ */
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
