@@ -1,7 +1,7 @@
 httpc get -v -h content-type:json -h header:klmn http://localhost:8080/get?course=maths&assignment=1
 httpc post -v -h content-type:klmn -h header:json -d inlinedata http://localhost:8080/post?course=maths
 
-httpfs http://localhost:8080/GET/
+httpfs http://localhost:8080/GET/..
 httpfs http://localhost:8080/GET/abc.txt
 httpfs -h Content-type:application/text http://localhost:8080/GET/abc
 httpfs -h Content-type:application/json http://localhost:8080/GET/hello
@@ -9,7 +9,7 @@ httpfs -h Content-Disposition:attachment;filename:abc.txt http://localhost:8080/
 httpfs -h Content-Disposition:attachment;filename:hello.json http://localhost:8080/GET/hello.json
 httpfs http://localhost:8080/GET/himen/abc.txt      (ERROR:Access Denied)
 
-httpfs http://localhost:8080/POST/abc.txt -d "FileUpdated"
+httpfs http://localhost:8080/POST/abc.txt -d "File  Updated"
 
 
 httpfs -v -p 8080 -d C:/Users/himen/Desktop

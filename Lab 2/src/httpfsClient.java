@@ -127,7 +127,10 @@ public class httpfsClient {
 					if (splitInput[i].startsWith(Constants.INLINE_DATA_CODE1)
 							|| splitInput[i].startsWith(Constants.INLINE_DATA_CODE2)) {
 						setBodyFlag(true);
-						setBody(splitInput[++i]);
+						String temp = input.substring(input.indexOf(Constants.INLINE_DATA_CODE2)).trim();
+						String temp1 = temp.substring(1);
+						setBody(temp1.substring(temp1.indexOf("\"")));
+						//System.out.println("--->" + getBody());
 					}
 				}
 			}

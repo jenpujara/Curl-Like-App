@@ -1,15 +1,3 @@
-/*
- * https://www.w3.org/Protocols/rfc1341/4_Content-Type.html
- * https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Disposition
- * https://stackoverflow.com/questions/5278975/http-response-header-content-disposition-for-attachments
- * https://stackoverflow.com/questions/16601428/how-to-set-content-disposition-and-filename-when-using-filesystemresource-to/22243867#22243867
- * https://www.javatpoint.com/java-regex
- * https://www.vogella.com/tutorials/JavaRegularExpressions/article.html
- * https://docs.oracle.com/javase/tutorial/networking/sockets/readingWriting.html
- * https://stackoverflow.com/questions/12715321/java-networking-explain-inputstream-and-outputstream-in-socket
- * https://github.com/Mananp96/Curl-like-app/tree/master/TCPClient-Server
- */
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -124,6 +112,7 @@ public class httpfsServerThread implements Runnable {
 							: isDispositionFlag();
 					setBody(inputRequest.startsWith(Constants.INLINE_DATA_CODE2) ? inputRequest.substring(2)
 							: getBody());
+				//	System.out.println(inputRequest + "assd + " + getBody());
 				}
 				if (isHttpcFlag()) {
 					if (inputRequest.matches(Constants.REG1)) {
@@ -239,7 +228,9 @@ public class httpfsServerThread implements Runnable {
 		String fileName = isContentTypeFlag() ? getClientRequest().substring(4) + getFileContentHeader()
 				: getClientRequest().substring(4);
 		File filePath = new File(retrieveFilePath(fileName));
-		if (isContentTypeFlag()) {
+		if(retrieveFilePath(fileName).contains("/..")) {
+			printOutput("Error: " + Constants.ACCESS_DENIED);
+		} else if (isContentTypeFlag()) {
 			try {
 				if (filePath.exists()) {
 					BufferedReader br = new BufferedReader(new FileReader(filePath));
@@ -371,6 +362,7 @@ public class httpfsServerThread implements Runnable {
 						: new File(getPathDirectory() + Constants.SLASH + getClientRequest().substring(5));
 
 				PrintWriter printWriter = new PrintWriter(filePath);
+				//System.out.println("---> 0" +getClientRequest());
 				printWriter.println(getBody());
 				writer.println("Operation Status : Succcess");
 				printWriter.close();
@@ -642,7 +634,7 @@ public class httpfsServerThread implements Runnable {
 		for (Entry<String, String> entry : headers.entrySet()) {
 			head.append(" " + entry.getKey() + ": " + entry.getValue() + "\r\n");
 		}
-		return head.toString().trim();
+		return head.toString();
 	}
 
 	public void setHeaders(Map<String, String> headers) {
@@ -653,18 +645,35 @@ public class httpfsServerThread implements Runnable {
 		String[] value = values.trim().split(":");
 		headers.put(value[0].trim(), value[1].trim());
 	}
-
 	public String getGETBody() {
-		return "{\r\n" + " \"args\":{" + getParameters() + "},\r\n" + " \"headers\":{\r\n" + getHeaders() + "},\r\n"
-				+ " \"origin\": " + Constants.ORIGIN + ",\r\n" + " \"url\": " + getUri() + ",\r\n" + "}";
+		return 
+				"{\r\n"+
+				"\"args\":{"+
+				getParameters()+"},\r\n"+
+				"\"headers\":{\r\n"+
+				getHeaders()+"},\r\n"+
+				"\"origin\": "+Constants.ORIGIN+",\r\n"+
+				"\"url\": "+getUri()+",\r\n"+
+				"}";
+	}
+	
+	public String getPOSTBody() {
+		return 
+				"{\r\n"+" "+
+				"\"args\":{"+" "+
+				getParameters()+"},\r\n"+" "+
+				"\"data\":{"+" "+
+				getContent()+"},\r\n"+" "+
+				"\"files\":{\r\n"+" "+
+				getFiles()+"},\r\n"+" "+
+				"\"headers\":{\r\n"+
+				getHeaders()+" },\r\n"+" "+
+				"\"json\": { },\r\n"+" "+
+				"\"origin\": "+Constants.ORIGIN+",\r\n"+" "+
+				"\"url\": "+getUri()+",\r\n"+
+				"}";
 	}
 
-	public String getPOSTBody() {
-		return "{\r\n" + " " + "\"args\":{" + " " + this.getParameters() + "},\r\n" + " " + "\"data\":{" + " "
-				+ this.getContent() + "},\r\n" + " " + "\"files\":{\r\n" + " " + getFiles() + "},\r\n" + " "
-				+ "\"headers\":{\r\n" + this.getHeaders() + " },\r\n" + " " + "\"json\": { },\r\n" + " "
-				+ "\"origin\": " + Constants.ORIGIN + ",\r\n" + " " + "\"url\": " + getUri() + ",\r\n" + "}";
-	}
 
 	public String getContent() {
 		return content;
