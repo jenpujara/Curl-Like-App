@@ -532,24 +532,30 @@ public class httpcClient {
 	 * @throws IOException
 	 */
 	public void getRequest() throws IOException {
+		writerBuilder = new  StringBuilder();
 		if (!(isReadFileFlag() || isInLineDataFlag())) {
 			socket = new Socket(getHostName(), getPortNumber());
 			PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
 			if (getUrlPath().length() == 0) {
-				writer.println(generateMethodURL("GET", "", ""));
+//				writer.println(generateMethodURL("GET", "", ""));
+				writerBuilder.append("GET / HTTP/1.1\n");
 			} else {
-				writer.println(generateMethodURL("GET", getUrlPath(), ""));
+//				writer.println(generateMethodURL("GET", getUrlPath(), ""));
+				writerBuilder.append("GET " + getUrlPath() + " HTTP/1.1\n");
 			}
-			writer.println("Host:" + getHostName());
+//			writer.println("Host:" + getHostName());
+			writerBuilder.append("Host:" + getHostName()+"\n");
 			if (!headerList.isEmpty()) {
 				for (int i = 0; i < headerList.size(); i++) {
 					if (isHeaderFlag()) {
 						String[] headerKeyValue = headerList.get(i).split(":");
-						writer.println(headerKeyValue[0] + ":" + headerKeyValue[1]);
+//						writer.println(headerKeyValue[0] + ":" + headerKeyValue[1]);
+						writerBuilder.append(headerKeyValue[0] + ":" + headerKeyValue[1]+"\n");
 					}
 				}
 			}
-			writer.println("\r\n");
+//			writer.println("\r\n");
+			writerBuilder.append("\r\n\n");
 			writer.flush();
 			displayOutput();
 			writer.close();

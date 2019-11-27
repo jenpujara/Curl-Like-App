@@ -259,7 +259,7 @@ public class httpfsServerThread implements Runnable {
 			}
 		}
 //		printOutput(getPOSTBody());
-		httpfsResponse.append(getPOSTBody()+"\n");
+		getHttpfsResponse().append(getPOSTBody()+"\n");
 	}
 
 	/**
@@ -276,7 +276,7 @@ public class httpfsServerThread implements Runnable {
 			setParameters(getCurlRequest());
 		}
 //		printOutput(getGETBody());
-		httpfsResponse.append(getGETBody()+"\n");
+		getHttpfsResponse().append(getGETBody()+"\n");
 	}
 
 	/**
@@ -296,11 +296,14 @@ public class httpfsServerThread implements Runnable {
 				if (filePath.exists()) {
 					BufferedReader br = new BufferedReader(new FileReader(filePath));
 					String line;
-					writer.println("File Content");
+//					writer.println("File Content");
+					getHttpfsResponse().append("File Content");
 					while ((line = br.readLine()) != null) {
-						writer.println(line);
+//						writer.println(line);
+						getHttpfsResponse().append(line);
 					}
-					writer.println("Operation Status : Success");
+//					writer.println("Operation Status : Success");
+					printOutput("Operation Status : Success");
 					br.close();
 				} else {
 					printOutput(Constants.HTTP_404_ERROR);
@@ -369,18 +372,24 @@ public class httpfsServerThread implements Runnable {
 						while ((line = br.readLine()) != null) {
 							if (isDispositionFlag()) {
 								if (isInLineFlag()) {
-									writer.println(line);
+//									writer.println(line);
+//									httpfsResponse.append(line+"\n");
+									printOutput(line+"\n");
 								} else if (isAttachmentFlag()) {
 									fileWriter.println(line);
 								}
 							} else {
-								writer.println(line);
+//								writer.println(line);
+//								httpfsResponse.append(line+"\n");
+								printOutput(line+"\n");
 							}
 
 						}
-						writer.println("Operation Status : Success");
-						if (isAttachmentFlag())
+//						writer.println("Operation Status : Success");
+						if (isAttachmentFlag()) {
 							fileWriter.close();
+							printOutput("Operation Status : Success");
+						}
 						br.close();
 					} catch (FileNotFoundException e) {
 						printOutput(Constants.HTTP_404_ERROR + Constants.FILE_NOT_FOUND);
@@ -435,10 +444,12 @@ public class httpfsServerThread implements Runnable {
 				PrintWriter printWriter = new PrintWriter(filePath);
 				//System.out.println("---> 0" +getClientRequest());
 				printWriter.println(getBody());
-				writer.println("Operation Status : Succcess");
+//				writer.println("Operation Status : Succcess");
+				printOutput("Operation Status : Succcess");
 				printWriter.close();
 			} catch (FileNotFoundException e) {
-				writer.print(Constants.HTTP_404_ERROR);
+//				writer.print(Constants.HTTP_404_ERROR);
+				printOutput(Constants.HTTP_404_ERROR);
 			}
 		} else {
 			printOutput("Error: " + Constants.ACCESS_DENIED);
