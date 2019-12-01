@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
@@ -91,21 +90,6 @@ public class httpfsServerThread implements Runnable {
 	 * @param counter        Counter to count the number of clients sending
 	 *                       simultaneous requests to Server
 	 */
-//	public httpfsServerThread(Socket serverClient, String pathDirectory1, int counter) {
-//		this.socket = serverClient;
-//		setClientInstance(counter);
-//		setPathDirectory(pathDirectory1);
-//		Instant instant = Instant.now();
-//		fileHeader = new ArrayList<>();
-//		filesList = new ArrayList<>();
-//		parameters = new HashMap<>();
-//		headers = new HashMap<>();
-//		headers.put("Connection", "keep-alive");
-//		headers.put("Host", "Localhost");
-//		headers.put("Date", instant.toString());
-//		
-//	}
-	
 	public httpfsServerThread(DatagramChannel channel, Packet packet, int counter, String pathToDir2, ByteBuffer buf,SocketAddress router) throws IOException {
 		setChannel(channel);
 		this.packet = packet;
@@ -128,11 +112,6 @@ public class httpfsServerThread implements Runnable {
 	 */
 	public void run() {
 		try {
-//			InputStreamReader inputReader = new InputStreamReader(socket.getInputStream());
-//			BufferedReader br = new BufferedReader(inputReader);
-//			writer = new PrintWriter(socket.getOutputStream());
-//			int count = 0;
-			
 			String payload = new String(packet.getPayload(), UTF_8);
 			System.out.println("payload=="+payload);
 			Reader inputString = new StringReader(payload);
@@ -153,9 +132,12 @@ public class httpfsServerThread implements Runnable {
 					contentTypeFlag = inputRequest.startsWith(Constants.CONTENT_TYPE) ? true : isContentTypeFlag();
 					dispositionFlag = inputRequest.startsWith(Constants.CONTENT_DISPOSITION) ? true
 							: isDispositionFlag();
+					System.out.println("Input Request " + inputRequest);
+					System.out.println("CONTENT_TYPE " +inputRequest.startsWith(Constants.CONTENT_TYPE));
+					
+					System.out.println("disposition " +inputRequest.startsWith(Constants.CONTENT_DISPOSITION));
 					setBody(inputRequest.startsWith(Constants.INLINE_DATA_CODE2) ? inputRequest.substring(2)
 							: getBody());
-				//	System.out.println(inputRequest + "assd + " + getBody());
 				}
 				if (isHttpcFlag()) {
 					if (inputRequest.matches(Constants.REG1)) {
@@ -182,20 +164,10 @@ public class httpfsServerThread implements Runnable {
 					.create();
 			channel.send(p.toBuffer(), getRouter());
 			logger.info("Sending \"{}\" to router at {}", getHttpfsResponse().toString() + 8080);
-//			System.out.println("Sending \"{}\" to router at {}" + getHttpfsResponse().toString() + 8080);
-
-			//        	//send null data packet when result is completed.
-			//			Packet p1 = packet.toBuilder()
-			//					.setPayload("".getBytes())
-			//					.create();
-			//			channel.send(p1.toBuffer(), router);
-						logger.info("Sending \"{}\" to router at {}", "empty message", 3000);
-//						System.out.println("Sending \"{}\" to router at {}" + "empty message" + "kuch bhi");
-
+			logger.info("Sending \"{}\" to router at {}", "empty message", 3000);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	/**
@@ -224,7 +196,6 @@ public class httpfsServerThread implements Runnable {
 		setCurlRequest(getCurlRequest().replace("HTTP/1.1", ""));
 		setStatusCode(Constants.HTTP_200);
 		setUri("http://" + Constants.IP_ADDRESS + ":" + getPort() + Constants.SLASH + getCurlRequest());
-//		writer.println("HTTP/1.0 " + getStatusCode() + " " + getConnectionState() + "\r\n" + getHeaders());
 		getHttpfsResponse().append("HTTP/1.0 " + getStatusCode() + " " + getConnectionState() + "\r\n" + getHeaders()+"\n");
 		checkCurlOption();
 	}
@@ -258,7 +229,6 @@ public class httpfsServerThread implements Runnable {
 				setParameters(getCurlRequest());
 			}
 		}
-//		printOutput(getPOSTBody());
 		getHttpfsResponse().append(getPOSTBody()+"\n");
 	}
 
@@ -275,7 +245,6 @@ public class httpfsServerThread implements Runnable {
 		} else {
 			setParameters(getCurlRequest());
 		}
-//		printOutput(getGETBody());
 		getHttpfsResponse().append(getGETBody()+"\n");
 	}
 
@@ -296,13 +265,10 @@ public class httpfsServerThread implements Runnable {
 				if (filePath.exists()) {
 					BufferedReader br = new BufferedReader(new FileReader(filePath));
 					String line;
-//					writer.println("File Content");
 					getHttpfsResponse().append("File Content");
 					while ((line = br.readLine()) != null) {
-//						writer.println(line);
 						getHttpfsResponse().append(line);
 					}
-//					writer.println("Operation Status : Success");
 					printOutput("Operation Status : Success");
 					br.close();
 				} else {
@@ -310,10 +276,8 @@ public class httpfsServerThread implements Runnable {
 				}
 
 			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		} else if (!fileName.contains(Constants.SLASH)) {
@@ -372,23 +336,18 @@ public class httpfsServerThread implements Runnable {
 						while ((line = br.readLine()) != null) {
 							if (isDispositionFlag()) {
 								if (isInLineFlag()) {
-//									writer.println(line);
-//									httpfsResponse.append(line+"\n");
 									printOutput(line+"\n");
 								} else if (isAttachmentFlag()) {
 									fileWriter.println(line);
 								}
 							} else {
-//								writer.println(line);
-//								httpfsResponse.append(line+"\n");
 								printOutput(line+"\n");
 							}
 
 						}
-//						writer.println("Operation Status : Success");
+						printOutput("Operation Status : Success");
 						if (isAttachmentFlag()) {
 							fileWriter.close();
-							printOutput("Operation Status : Success");
 						}
 						br.close();
 					} catch (FileNotFoundException e) {
@@ -442,13 +401,10 @@ public class httpfsServerThread implements Runnable {
 						: new File(getPathDirectory() + Constants.SLASH + getClientRequest().substring(5));
 
 				PrintWriter printWriter = new PrintWriter(filePath);
-				//System.out.println("---> 0" +getClientRequest());
 				printWriter.println(getBody());
-//				writer.println("Operation Status : Succcess");
 				printOutput("Operation Status : Succcess");
 				printWriter.close();
 			} catch (FileNotFoundException e) {
-//				writer.print(Constants.HTTP_404_ERROR);
 				printOutput(Constants.HTTP_404_ERROR);
 			}
 		} else {

@@ -122,36 +122,13 @@ public class httpfsServer {
 			}
 		}
 
-//		
-//		boolean flag = true;
-//		while (true) {
-//			counter++;
-//			Socket client = socket.accept();
-//			if (isDebugging())
-//				System.out.println(">>Connection Established with Client " + counter);
-//			httpfsServerThread serverThread = new httpfsServerThread(client, getPathDirectory(), counter);
-//			Thread thread = new Thread(serverThread);
-//			thread.start();
-//			if (!flag)
-//				break;
-//		}
-//		socket.close();		
-
 		DatagramChannel channel = DatagramChannel.open();
 		channel.bind(new InetSocketAddress(port));
-		
-//		ServerSocket socket = new ServerSocket(getPort());
-//		int counter = 0;
 		System.out.println("Server Started");
 		if (isDebugging()) {
-//			System.out.println("Server Listening  At " + getPort() + " Port");
 			logger.info("EchoServer is listening at {}", channel.getLocalAddress());
-//			System.out.println("EchoServer is listening at {}" + channel.getLocalAddress());
-
 		}
 		ByteBuffer buf = ByteBuffer.allocate(Constants.MAX_LEN).order(ByteOrder.BIG_ENDIAN);
-		
-		
 		httpfsServer server = new httpfsServer();
 		server.listenAndServe(channel,buf);		
 	}
@@ -162,23 +139,13 @@ public class httpfsServer {
 			buf.clear();
 			SocketAddress router = channel.receive(buf);
 			System.out.println();
-
-			// Parse a pacsoutket from the received raw data.
 			buf.flip();
 			packet = Packet.fromBuffer(buf);
 			buf.flip();
 			String payload = new String(packet.getPayload(), UTF_8);
 			logger.info("Packet: {}", packet);
-//			System.out.println("Packet: {}" + packet);
 			logger.info("Payload: {}", payload);
-//			System.out.println("Payload: {}" + payload);
 			logger.info("Router: {}", router);
-//			System.out.println("Router: {}" + router);
-
-			// Send the response to the router not the client.
-			// The peer address of the packet is the address of the client already.
-			// We can use toBuilder to copy properties of the current packet.
-			// This demonstrate how to create a new packet from an existing packet.
 			validateRequest(buf,payload,router,channel,counter);
 		}
 	}

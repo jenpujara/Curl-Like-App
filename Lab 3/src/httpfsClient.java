@@ -62,8 +62,7 @@ public class httpfsClient {
 	static DatagramChannel channel;
 	private PrintWriter out;
 	int port;
-	static ArrayList<String> headers = new ArrayList<>();
-	static SocketAddress routerAddr = new InetSocketAddress("localhost", 8080);
+	static SocketAddress routerAddr = new InetSocketAddress("localhost", 3000);
 	static int seqNum = 101;
 	private static final Logger logger = LoggerFactory.getLogger(httpfsClient.class);
 	static InetSocketAddress serverAddr;
@@ -126,12 +125,12 @@ public class httpfsClient {
 		packetDetails.put((int) sequenceNumber, Constants.ACK_CODE);
 	}
 
-	public httpfsClient(InetSocketAddress serverAddr2, String query2,String content2, ArrayList<String> headers2) throws IOException {
+	public httpfsClient(InetSocketAddress serverAddr2, String query2,String content2, ArrayList<String> headerList) throws IOException {
 
 		setServerAddr(serverAddr2);
 		setBody(content2);
 		setQuery(query2);
-		this.headers = headers2;
+		this.headerList = headerList;
 		channel = DatagramChannel.open();
 		setPacketDetails(new HashMap<Integer, String>());
 		handshake();
@@ -182,6 +181,7 @@ public class httpfsClient {
 	}
 	
 	private void sendToChannel(String process, int packetType) throws IOException {
+		System.out.println("process"  + process);
 		packet = createPacket(process,packetType);
 		channel.send(packet.toBuffer(), getRouterAddr());
 		packetDetails.put(getSeqNum(), "");
@@ -248,43 +248,22 @@ public class httpfsClient {
 	 */
 	public void sendRequest(String query) throws IOException {
 		setClientRequest(new StringBuilder());
-		getClientRequest().append(getQuery()+"\n");
+		setClientRequest(getClientRequest().append(getQuery()+"\n"));
 		if(headerFlag) {
-			for(int i = 0 ; i<headers.size();i++) {
-				getClientRequest().append(headers.get(i)+"\n");
+			for(int i = 0 ; i<headerList.size();i++) {
+				setClientRequest(getClientRequest().append(headerList.get(i)+"\n"));
 			}
 		}
 		if(bodyFlag) {
-			getClientRequest().append(Constants.PATH_DIRECTORY + getBody() + "\n");
+			setClientRequest(getClientRequest().append(Constants.PATH_DIRECTORY + getBody() + "\n"));
 		}
-		getClientRequest().append("\r\n");
+		setClientRequest(getClientRequest().append("\r\n"));
 		sendToChannel(getClientRequest().toString().trim(), Constants.DATA_TYPE);
-//		packet = new Packet.Builder()
-//				.setType(Packet.DATA_TYPE)
-//				.setSequenceNumber(seqNum)
-//				.setPortNumber(serverAddr.getPort())
-//				.setPeerAddress(serverAddr.getAddress())
-//				.setPayload(clientRequest.toString().trim().getBytes())
-//				.create();
-//		channel.send(packet.toBuffer(), getRouterAddr());
-//		packetDetails.put(getSeqNum(), "");
 		logger.info("Sending \"{}\" to router at {}", getClientRequest(), getRouterAddr());
-//		System.out.println("Sending \"{}\" to router at {}" + getClientRequest() + getRouterAddr());
-
 		receive(channel, getRouterAddr());
-		//last packet from client to close the connection
 		if(getPacketDetails(getSeqNum()).equals(Constants.ACK_CODE)) {
 			setSeqNum(getSeqNum()+1);
 			sendToChannel(Constants.ACK_CODE, Constants.DATA_TYPE);
-//			packet = new Packet.Builder()
-//					.setType(Packet.DATA_TYPE)
-//					.setSequenceNumber(seqNum)
-//					.setPortNumber(serverAddr.getPort())
-//					.setPeerAddress(serverAddr.getAddress())
-//					.setPayload("ACK".getBytes())
-//					.create();
-//			channel.send(packet.toBuffer(), getRouterAddr());
-//			packetDetails.put(getSeqNum(), "");
 		}else {
 			this.sendRequest(getQuery());
 		}
@@ -370,7 +349,6 @@ public class httpfsClient {
 						String temp = input.substring(input.indexOf(Constants.INLINE_DATA_CODE2)).trim();
 						String temp1 = temp.substring(1);
 						setBody(temp1.substring(temp1.indexOf("\"")));
-						//System.out.println("--->" + getBody());
 					}
 				}
 			}
@@ -381,7 +359,7 @@ public class httpfsClient {
 				int port = uri.getPort();
 				setQuery(uri.getPath().substring(1));
 				InetSocketAddress serverAddress = new InetSocketAddress(host, port);
-				httpfsClient httpfsclient = new httpfsClient(serverAddress,getQuery(),getBody(), headers);
+				httpfsClient httpfsclient = new httpfsClient(serverAddress,getQuery(),getBody(), headerList);
 				System.out.println(packetDetails);
 			} catch (IOException e) {
 				System.out.println(Constants.HTTP_404_ERROR + " : Host Not Found");
@@ -397,85 +375,6 @@ public class httpfsClient {
 	 * method to display the data received from client request.
 	 * @param payload 
 	 */
-//	public static void receiveData(String query) {
-//		BufferedReader br = null;
-//		try {
-//			br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-//			String out = "";
-//			boolean tempFlag = false;
-//			ArrayList<String> fileList = new ArrayList<>();
-//			ArrayList<String> directoryList = new ArrayList<>();
-//			while ((out = br.readLine()) != null) {
-//				if (!query.equals(Constants.GET_METHOD + "/")) {
-//					System.out.println(out);
-//				}
-//
-//				else {
-//					tempFlag = true;
-//					String[] temp = out.split(">>");
-//					if (temp[0].trim().equals("Directory")) {
-//						directoryList.add(temp[1].trim());
-//					}
-//					if (temp[0].trim().equals("File")) {
-//						fileList.add(temp[1].trim());
-//					}
-//				}
-//			}
-//
-//			if (tempFlag) {
-//				System.out.println("------------");
-//				System.out.println("DIRECTORIES: ");
-//				System.out.println("------------");
-//				for (String str : directoryList) {
-//					System.out.println(str);
-//				}
-//
-//				System.out.println("-------");
-//				System.out.println("FILES: ");
-//				System.out.println("-------");
-//				for (String str : fileList) {
-//					System.out.println(str);
-//				}
-//			}
-//
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		} finally {
-//			try {
-//				br.close();
-//			} catch (IOException e) {
-//				e.printStackTrace();
-//			}
-//		}
-//	}
-
-//	/**
-//	 * this method is used to form the client request using the data sent to the
-//	 * server.
-//	 */
-//	public static void sendRequest(String query) {
-//		try {
-//			PrintWriter writer = new PrintWriter(socket.getOutputStream());
-//			writer.println(getQuery());
-//
-//			if (isHeaderFlag())
-//				for (int i = 0; i < headerList.size(); i++) {
-//					writer.println(headerList.get(i));
-//				}
-//
-//			if (isBodyFlag())
-//				writer.println("-d" + getBody());
-//
-//			writer.println("\r\n");
-//			writer.flush();
-//			receiveData(query);
-//			writer.close();
-//			socket.close();
-//		} catch (IOException io) {
-//			io.printStackTrace();
-//		}
-//
-//	}
 
 	/**
 	 * setter method to set the body of the request

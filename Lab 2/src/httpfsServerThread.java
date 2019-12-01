@@ -110,6 +110,11 @@ public class httpfsServerThread implements Runnable {
 					contentTypeFlag = inputRequest.startsWith(Constants.CONTENT_TYPE) ? true : isContentTypeFlag();
 					dispositionFlag = inputRequest.startsWith(Constants.CONTENT_DISPOSITION) ? true
 							: isDispositionFlag();
+					System.out.println("Input Request " + inputRequest);
+					System.out.println("CONTENT_TYPE " +inputRequest.startsWith(Constants.CONTENT_TYPE));
+					
+					System.out.println("disposition " +inputRequest.startsWith(Constants.CONTENT_DISPOSITION));
+					
 					setBody(inputRequest.startsWith(Constants.INLINE_DATA_CODE2) ? inputRequest.substring(2)
 							: getBody());
 				//	System.out.println(inputRequest + "assd + " + getBody());
