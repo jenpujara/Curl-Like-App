@@ -40,6 +40,9 @@ import org.slf4j.LoggerFactory;
  * java https://systembash.com/a-simple-java-tcp-server-and-tcp-client/
  * https://www.pegaxchange.com/2017/12/07/simple-tcp-ip-server-client-java/
  * https://www.geeksforgeeks.org/synchronized-in-java/
+ * https://www.tutorialspoint.com/java_nio/java_nio_datagram_channel.htm
+ * http://tutorials.jenkov.com/java-nio/datagram-channel.html
+ * https://docs.oracle.com/javase/7/docs/api/java/net/InetAddress.html
  * https://github.com/Mananp96/Curl-like-app/tree/master/TCPClient-Server
  */
 
