@@ -76,7 +76,6 @@ public class httpfsClient {
 	static String payload;
 	private StringBuilder clientRequest;
 	
-//	public static final String ACK = "ACK";
 	static Packet packet;
 	static Map<Integer, String> packetDetails;
 	
@@ -149,46 +148,23 @@ public class httpfsClient {
 	 */
 	public void handshake() throws IOException {
 		sendToChannel("handshake",Constants.CONNECTION_TYPE);
-//		p = new Packet.Builder()
-//		.setType(Packet.CONNECTION_TYPE)
-//		.setSequenceNumber(seqNum)
-//		.setPortNumber(serverAddr.getPort())
-//		.setPeerAddress(serverAddr.getAddress())
-//		.setPayload("handshake".getBytes())
-//		.create();
-//		channel.send(packet.toBuffer(), getRouterAddr());
-//		packetDetails.put(getSeqNum(), "");
 		logger.info("Sending \"{}\" to router at {}", "handshake message", getRouterAddr());
-//		System.out.println("Sending \"{}\" to router at {}" + "handshake message" + getRouterAddr());
 		receive(channel,getRouterAddr());
 
 		if(getPacketDetails(getSeqNum()).equals(Constants.ACK_CODE)) {
 			setSeqNum(getSeqNum()+1); 
 			sendToChannel(Constants.ACK_CODE,Constants.CONNECTION_TYPE);
-//			p = new Packet.Builder()
-//					.setType(Packet.CONNECTION_TYPE)
-//					.setSequenceNumber(seqNum)
-//					.setPortNumber(serverAddr.getPort())
-//					.setPeerAddress(serverAddr.getAddress())
-//					.setPayload("ACK".getBytes())
-//					.create();
-//			channel.send(packet.toBuffer(), getRouterAddr());
-//			packetDetails.put(getSeqNum(), "");
-
 			logger.info("Sending \"{}\" to router at {}", "Connection done", getRouterAddr());
-//			System.out.println("Sending \"{}\" to router at {}" + "Connection done" + getRouterAddr());
 			setSeqNum(getSeqNum()+1);
 			sendRequest(getQuery());
 		}else {
 
 			logger.info("Sending \"{}\" again to router at {}", "handshake message", getRouterAddr());
-//			System.out.println("Sending \"{}\" again to router at {}" + "handshake message" + getRouterAddr());
 			handshake();
 		}
 	}
 	
 	private void sendToChannel(String process, int packetType) throws IOException {
-		System.out.println("process"  + process);
 		packet = createPacket(process,packetType);
 		channel.send(packet.toBuffer(), getRouterAddr());
 		packetDetails.put(getSeqNum(), "");
@@ -216,13 +192,11 @@ public class httpfsClient {
 		Selector selector = Selector.open();
 		channel.register(selector, OP_READ);
 		logger.info("Waiting for the response");
-//		System.out.println("Waiting for the response");
 		selector.select(10000);
 
 		Set<SelectionKey> keys = selector.selectedKeys();
 		if(keys.isEmpty()){
 			logger.error("No response after timeout");
-//			System.out.println("No response after timeout");
 			return;
 		}
 		displayPayload(channel,keys);
@@ -237,12 +211,9 @@ public class httpfsClient {
 				break;
 			Packet response = Packet.fromBuffer(buf);
 			logger.info("Packet: {}", response);
-//			System.out.println("Packet: {}" + response);
 			logger.info("Router: {}", router);
-//			System.out.println("Router: {}" + router);
 			setPayload(new String(response.getPayload(), StandardCharsets.UTF_8));
 			logger.info("Payload: {}", getPayload());
-//			System.out.println("Payload: {}" + getPayload());
 			setPacketACK(response.getSequenceNumber());
 			keys.clear();
 		}
