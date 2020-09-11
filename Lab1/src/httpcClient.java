@@ -1,4 +1,3 @@
-package com.lab.one;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -35,12 +34,12 @@ import java.util.ArrayList;
  * https://www.geeksforgeeks.org/uri-getauthority-method-in-java-with-examples/
  * https://stackoverflow.com/questions/3487389/convert-string-to-uri
  */
-public class httpcLibrary {
+public class httpcClient {
 
 	ArrayList<String> headerList = new ArrayList<>();
 	Socket socket;
 
-	String inLineData;
+	String inLineData = "";
 	String readFile;
 	String generateFile;
 	String input;
@@ -69,7 +68,7 @@ public class httpcLibrary {
 	 * 
 	 * @param input1
 	 */
-	public httpcLibrary(String input1) {
+	public httpcClient(String input1) {
 		input = input1;
 	}
 
@@ -88,7 +87,10 @@ public class httpcLibrary {
 			}
 		}
 		if (inputList.get(0).equals(Constants.HTTPC) && (inputList.get(1).equals(Constants.HELP))) {
-			printHelp(inputList.get(2));
+			if (inputList.size() == 2)
+				printHelp("NOTHING");
+			else
+				printHelp(inputList.get(2));
 		} else if (inputList.get(0).equals(Constants.HTTPC)
 				&& (inputList.get(1).equals(Constants.GET) || inputList.get(1).equals(Constants.POST))) {
 			for (int i = 0; i < inputList.size(); i++) {
@@ -104,12 +106,26 @@ public class httpcLibrary {
 
 				case Constants.INLINE_DATA_CODE1:
 					setInLineDataFlag(true);
-					inLineData = inputList.get(++i) + inputList.get(++i);
+					for (int j = ++i; j < inputList.size(); j++) {
+						if (inputList.get(j).substring(inputList.get(j).length() - 1).equals("}")) {
+							inLineData += inputList.get(j);
+							break;
+						} else {
+							inLineData += inputList.get(j);
+						}
+					}
 					break;
 
 				case Constants.INLINE_DATA_CODE2:
 					setInLineDataFlag(true);
-					inLineData = inputList.get(++i) + inputList.get(++i);
+					for (int j = ++i; j < inputList.size(); j++) {
+						if (inputList.get(j).substring(inputList.get(j).length() - 1).equals("}")) {
+							inLineData += inputList.get(j);
+							break;
+						} else {
+							inLineData += inputList.get(j);
+						}
+					}
 					break;
 
 				case Constants.READFILE_CODE:
@@ -164,6 +180,7 @@ public class httpcLibrary {
 			System.out.println("Invalid URL");
 		}
 	}
+
 	/**
 	 * printHelp method prints the details for GET and POST when help option is
 	 * typed in.
@@ -181,6 +198,10 @@ public class httpcLibrary {
 					+ "Get executes a HTTP GET request for a given URL.\r\n"
 					+ " -v Prints the detail of the response such as protocol, status,\r\n" + "and headers.\r\n"
 					+ " -h key:value Associates headers to HTTP Request with the format\r\n" + "'key:value'.");
+		} else if (option.equals("NOTHING")) {
+			System.out.println(
+					"httpc is a curl-like application but supports HTTP protocol only.\r\n"
+					+"Usage:\r\n\t httpc command [arguments] \r\nThe commands are: \r\n\tget\texecutes a HTTP GET request and prints the response.\r\n\tpost\texecutes a HTTP POST request and prints the response. \r\n\thelp\tprints this screen. \r\nUse \"httpc help [command]\" for more information about a command.");
 		}
 	}
 
@@ -231,6 +252,12 @@ public class httpcLibrary {
 
 		socket = new Socket(getHostName(), getPortNumber());
 		StringBuilder data = new StringBuilder();
+		/*
+		 * BufferedWriter writer = new BufferedWriter(new
+		 * OutputStreamWriter(socket.getOutputStream())); if (urlPath.length() == 0) {
+		 * writer.write("POST / HTTP/1.1\r\n"); } else { writer.write("POST " + urlPath
+		 * + " HTTP/1.1\r\n"); }
+		 */
 		PrintWriter writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
 		if (urlPath.length() != 0) {
 			writer.write(generateMethodURL("POST", getUrlPath(), " HTTP/1.1\r\n"));
@@ -245,22 +272,26 @@ public class httpcLibrary {
 			}
 		}
 		if (isInLineDataFlag()) {
-			data.append(inLineData);
+			writer.write("Content-Length:" + inLineData.length() + "\r\n");
 		} else if (isReadFileFlag()) {
 			BufferedReader reader = new BufferedReader(new FileReader(readFile));
 			String line;
 			while ((line = reader.readLine()) != null) {
 				data.append(line);
 			}
+			writer.write("Content-Length:" + data.toString().length() + "\r\n");
+			System.out.println("Data " + data.toString());
 			reader.close();
 		}
-		writer.write("Content-Length:" + data.toString().trim().length() + "\r\n");
 		writer.write("\r\n");
 		if (inLineData != null) {
-			writer.write(inLineData.replace("\'", "") + "\r\n");
+			inLineData = inLineData.replace("\'", "");
+			writer.write(inLineData);
+			writer.write("\r\n");
 		}
-		if (data.toString().trim().length() >= 1) {
-			writer.write(data.toString() + "\r\n");
+		if (data.toString() != null) {
+			writer.write(data.toString());
+			writer.write("\r\n");
 		}
 		writer.flush();
 		displayOutput();

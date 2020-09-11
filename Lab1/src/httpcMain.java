@@ -1,4 +1,3 @@
-package com.lab.one;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -6,7 +5,7 @@ import java.io.InputStreamReader;
 /* References
  * https://tools.ietf.org/html/rfc7231#section-7.1.2
  */
-public class httpcClient {
+public class httpcMain{
 	
 	public static void main(String[] args) {
 		while (true) {
@@ -18,13 +17,11 @@ public class httpcClient {
 				if (input.equalsIgnoreCase("exit")) {
 					break;
 				}
-				httpcLibrary library = new httpcLibrary(input);
+				httpcClient library = new httpcClient(input);
 				library.parseInput();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
-	}
-
-	
+	}	
 }
